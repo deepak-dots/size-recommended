@@ -1,0 +1,32 @@
+{% comment %}
+  Find My Perfect Size - App Block
+{% endcomment %}
+
+<div class="size-finder-wrapper">
+  <button
+    class="size-finder-btn"
+    data-product-id="{{ product.id }}"
+    data-shop="{{ shop.permanent_domain }}"
+    data-host="{{ request.host }}"
+  >
+    Find My Perfect Size
+  </button>
+</div>
+
+<!-- MODAL -->
+<div id="sizeFinderModal" class="sf-modal">
+  <div class="sf-modal-content">
+    <span class="sf-close">&times; ddd</span>
+
+    <iframe
+      id="sizeFinderFrame"
+      src=""
+      frameborder="0"
+      loading="lazy"
+    ></iframe>
+  </div>
+</div>
+
+<!-- Assets -->
+<script src="{{ 'size-finder.js' | asset_url }}" defer></script>
+<link href="{{ 'size-finder.css' | asset_url }}" rel="stylesheet">

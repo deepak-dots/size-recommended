@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
+
+class VerifyCsrfToken extends Middleware
+{
+    /**
+     * The URIs that should be excluded from CSRF verification.
+     *
+     * @var array
+     */
+    protected $except = [
+        'api/products/count',
+        'api/products',
+        'api/graphql',
+        'api/webhooks',
+        'proxy/*',
+        'api/proxy/*',
+        //'api/proxy/v1/shoes-sizes',
+        //'https://requirement-homepage-lone-anatomy.trycloudflare.com/api/proxy/v1/shoes-sizes'
+    ];
+}

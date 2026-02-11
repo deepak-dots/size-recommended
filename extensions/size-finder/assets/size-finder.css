@@ -1,0 +1,386 @@
+/* Button */
+.size-finder-btn {
+    width: 100%;
+    padding: 14px;
+    background: #008060;
+    color: #fff;
+    border-radius: 8px;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+
+/* Lock scroll when modal open */
+body.sf-modal-open {
+    overflow: hidden;
+}
+
+
+
+/* Modal overlay */
+.sf-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 9999;
+
+    display: none;
+}
+
+/* Active modal (CENTER FIX) */
+.sf-modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal box */
+.sf-modal-content {
+    background: #fff;
+    width: 90%;
+    max-width: 800px;
+    max-height: 85vh;
+    padding: 20px;
+    border-radius: 12px;
+    position: relative;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Close icon */
+.sf-close {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 26px;
+    cursor: pointer;
+    line-height: 1;
+}
+
+/* Simple inputs */
+.sf-modal-content input,
+.sf-modal-content select {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+/* Buttons inside modal */
+.sf-primary-btn {
+    width: 100%;
+    padding: 14px;
+    background: #008060;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.product-size-finder-popup .title-box {
+    margin-bottom: 30px;
+}
+
+.step-label {
+    background: #e5f0f1;
+    display: table;
+    border-radius: 20px;
+    padding: 6px 15px;
+    font-size: 14px;
+    color: #006c75;
+    font-weight: 600;
+}
+
+.product-size-finder-popup .title-box h2 {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    margin-top: 20px;
+}
+
+.product-size-finder-popup .title-box p {
+    font-size: 16px;
+    color: #868b95;
+
+}
+
+.product-size-finder-popup input[type="text"],
+.product-size-finder-popup input[type="email"],
+.product-size-finder-popup input[type="number"] {
+    border-radius: 10px;
+    background-color: #f9fafb;
+    border: 1px solid #ccc;
+    height: 60px;
+    padding: 0 20px;
+}
+
+
+.product-size-finder-popup select {
+    border-radius: 10px;
+    background-color: #f9fafb;
+    border: 1px solid #ccc;
+    height: 60px;
+    line-height: 60px;
+    padding: 0 20px;
+}
+
+.product-size-finder-popup label {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 10px;
+    display: block;
+}
+
+.measure-btn-row {
+    display: flex;
+    margin-bottom: 30px;
+}
+
+.measure-btn-row button {
+    width: 40%;
+    height: 150px;
+    border-radius: 15px;
+    border: 2px solid #f2f3f5;
+    background: #fff;
+    margin-right: 10px;
+}
+
+.measure-btn-row button i {
+    background: #ccc;
+    border-radius: 50%;
+    height: 80px;
+    width: 80px;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.measure-btn-row button i img {
+    width: 50%;
+    height: 50%;
+}
+
+.measure-btn-row button:hover {
+    border-color: #006c75;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+.measure-btn-row button:hover i {
+    background: #006c75;
+}
+
+.measure-btn-row button:hover img {
+    filter: brightness(100%) invert(100%);
+}
+
+
+
+.product-size-finder-popup .popupBtn {
+    width: auto;
+    padding: 22px 50px;
+    background: #006c75;
+    border-radius: 35px;
+    font-weight: 600;
+    border: 0;
+    color: #fff;
+
+}
+
+
+
+.product-detail-col {
+    display: flex;
+    gap: 30px;
+}
+
+.product-col-left {
+    width: 40%;
+    background: #f8fafc;
+    padding: 20px;
+}
+
+.product-col-right {
+    width: 60%;
+    padding: 20px;
+}
+
+.musturement-guide h2 {
+    font-size: 22px;
+    margin-top: 0;
+    margin-bottom: 0px;
+}
+
+.musturement-guide .subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.tab-btn-row {
+    background: #f1f1f1;
+    border-radius: 25px;
+    padding: 5px;
+    gap: 10px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.tab-btn-row button {
+    border: 0;
+    padding: 10px 15px;
+    border-radius: 20px;
+    width: calc(50% - 5px);
+    text-align: center;
+    color: #5f7087;
+    font-weight: 600;
+    background: transparent;
+}
+
+.tab-btn-row button.active {
+    color: #0f5b66;
+    background: #fff;
+}
+
+
+.product-col-right #sf-measurements h4 {
+    font-size: 14px;
+    text-align: center;
+    position: relative;
+}
+
+.product-col-right #sf-measurements h4:before {
+    content: "";
+    background: #ccc;
+    width: 100%;
+    height: 1px;
+    position: absolute;
+    left: 0;
+    top: 8px;
+    z-index: 0;
+}
+
+.product-col-right #sf-measurements h4 span {
+    content: "";
+    background: #fff;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    position: absolute;
+    z-index: 0;
+    height: 20px;
+}
+
+/* Card */
+.musturement-guide.card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    position: relative;
+    background-image: radial-gradient(#dce3ea 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+
+/* Foot Diagram */
+
+
+.musturement-guide .foot-area {
+    position: relative;
+    width: 100%;
+    margin: 0 auto;
+    border: 1px solid #c9d2dc;
+    border-radius: 20px;
+    background: #fff;
+    overflow: hidden;
+
+}
+
+.musturement-guide .foot-area img {
+    max-width: 100%;
+}
+
+.musturement-guide .point.e {
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Info Box */
+.musturement-guide .info-box {
+    margin-top: 25px;
+    background: #e6f1f3;
+    padding: 18px;
+    border-radius: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 12px;
+    margin-bottom: 25px;
+}
+
+.musturement-guide .info-icon {
+    width: 28px;
+    height: 28px;
+    background: #0f6b6e;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.musturement-guide .info-text strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Labels Section */
+.musturement-guide .labels {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.musturement-guide .label-item {
+    background: #e9edf2;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: #4b5563;
+    width: calc(50% - 5px);
+}
+
+.product-btn-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.popupBackBtn {
+    background: transparent;
+    border: 0;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+}
