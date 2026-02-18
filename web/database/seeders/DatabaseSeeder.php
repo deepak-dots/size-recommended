@@ -18,12 +18,12 @@ class DatabaseSeeder extends Seeder
             // ShoesSizeChartSeeder::class,
             // BrandSeeder::class,
             ProductCategorySeeder::class,
-            // ShoesBrandSeeder::class,
-            // GenderSeeder::class,
-            // MeasurementTypeSeeder::class,
-            // ShoeBrandMeasurementTypeSeeder::class,
-            // ShoeStyleSeeder::class,
-            // SizeSeeder::class,
+            ShoesBrandSeeder::class,
+            GenderSeeder::class,
+            MeasurementTypeSeeder::class,
+            ShoeBrandMeasurementTypeSeeder::class,
+            ShoeStyleSeeder::class,
+            SizeSeeder::class,
         ]);
     }
 }

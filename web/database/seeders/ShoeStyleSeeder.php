@@ -19,12 +19,6 @@ class ShoeStyleSeeder extends Seeder
             'Core Skate',
             'Classic Lace High Tops',
             'Comfort',
-            'Inclusion',
-            'Lace Low Tops',
-            'Lace High Tops',
-            'Slip On',
-            'Sandals',
-            'Boots',
         ];
         $brands = DB::table('shoe_brands')->pluck('id');
         $genders = DB::table('shoe_genders')->pluck('id');

@@ -23,11 +23,6 @@ export default function App() {
             <NavigationMenu
               navigationLinks={[
                 {
-                  label: 'Find My Size',
-                  destination: "/FindMySize",
-                },
-                
-                {
                   label: 'Size data management',
                   destination: "/SizeDataManagement",
                 },

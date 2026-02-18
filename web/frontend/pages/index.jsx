@@ -3,205 +3,215 @@ import {
   Layout,
   Card,
   Button,
-  DataTable,
   Badge,
   Text,
   Stack,
-  Toast,
-  Spinner,
+  DataTable,
+  TextField,
+  Icon,
+  Modal,
+  Banner,
 } from "@shopify/polaris";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
+import { SearchMinor, EditMinor, DeleteMinor, PlusMinor } from "@shopify/polaris-icons";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import QuickLinks from "./QuickLinks";
+import CSVUpload from "./CSVUpload";  
 
-const SizeDataManagement = () => {
-  const fetch = useAuthenticatedFetch();
-  const fileInputRef = useRef(null);
+export default function SizeDataManagement() {
+  const [rows, setRows] = useState([]);
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [uploading, setUploading] = useState(false);
-  const [brands, setBrands] = useState([]);
-  const [toastActive, setToastActive] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastError, setToastError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  /* =========================
-     FETCH BRAND SUMMARY
-  ========================= */
-  const loadBrands = useCallback(async () => {
+  // Modal states for Add/Edit
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingBrand, setEditingBrand] = useState(null);
+  const [brandName, setBrandName] = useState("");
+
+  // Fetch brand list
+  const fetchBrands = async () => {
+    setLoading(true);
     try {
-      const res = await fetch("/api/size-brands-summary");
-      const data = await res.json();
+      const response = await axios.get("api/proxy/v1/brands-list");
+      const data = response.data.data; // Make sure backend returns { data: [...] }
 
-      if (data.success && Array.isArray(data.data)) {
-        setBrands(data.data);
-      } else if (Array.isArray(data)) {
-        setBrands(data);
-      } else {
-        setBrands([]);
-      }
+      const formattedRows = data.map((brand) => [
+        brand.name || "N/A",
+        <Badge>{brand.category || "General"}</Badge>,
+        brand.mapped_sizes || "-",
+        // Fixed Last Modified column
+        brand.updated_at
+          ? new Date(brand.updated_at).toLocaleString()
+          : new Date(brand.created_at).toLocaleString(),
+        // Actions stack remains
+        <Stack spacing="tight">
+          <Button plain icon={EditMinor} onClick={() => openEditModal(brand)} />
+          <Button plain icon={DeleteMinor} destructive onClick={() => deleteBrand(brand.id)} />
+        </Stack>,
+      ]);
+
+      setRows(formattedRows);
     } catch (error) {
-      console.error("Failed to load brands:", error);
-      setBrands([]);
+      console.error("Error fetching brands:", error);
+    } finally {
+      setLoading(false);
     }
-  }, [fetch]);
-
-  useEffect(() => {
-    loadBrands();
-  }, [loadBrands]);
-
-  /* =========================
-     CSV UPLOAD HANDLER
-  ========================= */
-  const handleCSVUpload = async (file) => {
-    if (!file) return;
-
-    // Validate extension instead of MIME (more reliable)
-    if (!file.name.endsWith(".csv")) {
-      setToastMessage("Please upload a valid .csv file.");
-      setToastError(true);
-      setToastActive(true);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("csv_file", file);
-
-    setUploading(true);
-
-    try {
-      const response = await fetch("/api/proxy/v1/import-csv", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setToastMessage(data.message || "Upload failed.");
-        setToastError(true);
-      } else {
-        setToastMessage(
-          data.message ||
-            "CSV file uploaded and import job dispatched successfully"
-        );
-        setToastError(false);
-
-        // Reload brand summary
-        loadBrands();
-      }
-
-      setToastActive(true);
-    } catch (error) {
-      console.error("Upload error:", error);
-      setToastMessage("Network error. Please try again.");
-      setToastError(true);
-      setToastActive(true);
-    }
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
-    setUploading(false);
   };
 
-  /* =========================
-     TABLE ROWS
-  ========================= */
-  const rows = brands.map((b) => [
-    b.brand_name || "—",
-    b.specialist_category || "—",
-    `${b.rules_count || 0} Rules`,
-    `${b.updated_at || "—"} by ${b.updated_by || "—"}`,
-    <Badge status={b.status === "Live" ? "success" : "attention"}>
-      {b.status || "Draft"}
-    </Badge>,
-    "⋮",
-  ]);
+  useEffect(() => {
+    fetchBrands();
+  }, []);
+
+  // Filter rows by search
+  const filteredRows = rows.filter((row) =>
+    row[0].toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Open Add Modal
+  const openAddModal = () => {
+    setEditingBrand(null);
+    setBrandName("");
+    setErrorMessage("");
+    setIsModalOpen(true);
+  };
+
+  // Open Edit Modal
+  const openEditModal = (brand) => {
+    setEditingBrand(brand);
+    setErrorMessage("");
+    setBrandName(brand.name || brand[0]); // handle both API object or old row array
+    setIsModalOpen(true);
+  };
+
+  // Save brand
+  const handleSave = async () => {
+    try {
+      if (editingBrand) {
+        await axios.put(`api/proxy/v1/brands/${editingBrand.id}`, { name: brandName });
+      } else {
+        await axios.post("api/proxy/v1/brands", { name: brandName });
+      }
+      setIsModalOpen(false);
+      fetchBrands();
+    } catch (error) {
+      if (error.response && error.response.status === 409) {
+        setErrorMessage("Brand already exists.");
+      } else if (error.response?.data?.message) {
+        setErrorMessage(error.response.data.message);
+      } else {
+        setErrorMessage("Brand already exists.");
+      }
+    }
+  };
+
+  // Delete brand
+  const deleteBrand = async (id) => {
+    if (window.confirm("Are you sure you want to delete this brand?")) {
+      try {
+        await axios.delete(`api/proxy/v1/brands/${id}`);
+        fetchBrands();
+      } catch (error) {
+        console.error("Error deleting brand:", error);
+      }
+    }
+  };
 
   return (
     <Page
       fullWidth
       title="Size Data Management"
-      subtitle="Upload and manage shoe size charts via CSV."
-      primaryAction={{
-        content: "Upload CSV",
-        loading: uploading,
-        onAction: () => fileInputRef.current?.click(),
-      }}
+      subtitle="Manage specialized sizing charts for AFO-friendly, extra-wide, and brace-compatible footwear."
     >
-      {/* Hidden File Input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".csv"
-        hidden
-        onChange={(e) => handleCSVUpload(e.target.files[0])}
-      />
-
       <Layout>
-        {/* MAIN TABLE */}
         <Layout.Section>
-          <Card padding="0">
-            {uploading ? (
-              <div style={{ padding: "20px", textAlign: "center" }}>
-                <Spinner size="large" />
-                <p>Uploading and dispatching import job...</p>
-              </div>
-            ) : (
-              <DataTable
-                columnContentTypes={[
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                  "text",
-                ]}
-                headings={[
-                  "Brand",
-                  "Specialist Category",
-                  "Mapped Sizes",
-                  "Last Modified",
-                  "Visibility",
-                  "Actions",
-                ]}
-                rows={rows}
-              />
-            )}
-          </Card>
-        </Layout.Section>
+          <Stack distribution="fill" spacing="tight">
+            {/* 10% Block - Tips */}
+            <Stack.Item fill={false} style={{ width: "10%" }}>
+              <Card>
+                <Card.Section>
+                  <Text as="p" fontWeight="regular">
+                    <Stack.Item fill={false} style={{ width: "20%" }}>
+                      <QuickLinks />
+                    </Stack.Item>
+                  </Text>
+                </Card.Section>
+              </Card>
+            </Stack.Item>
 
-        {/* SIDE PANEL */}
-        <Layout.Section secondary>
-          <Card title="CSV Upload Instructions">
-            <Stack vertical>
-              <Text as="p">
-                Ensure your CSV contains the following required headers:
-              </Text>
+            {/* 60% Block - Brand List */}
+            <Stack.Item fill={false} style={{ width: "60%" }}>
+              <Card>
+                <Card.Section>
+                  {/* Search and Add */}
+                  <Stack distribution="fill" alignment="center" style={{ marginBottom: "16px" }}>
+                    <TextField
+                      placeholder="Search brands or categories..."
+                      prefix={<Icon source={SearchMinor} />}
+                      value={search}
+                      onChange={setSearch}
+                    />
+                    <Button primary icon={PlusMinor} onClick={openAddModal}>
+                      Add Brand
+                    </Button>
+                  </Stack>
 
-              <Text as="p">
-                brand_name, size_category, internal_group,
-                measurement_type, measurement_name, style,
-                width_group, us_size, uk_size, eu_size,
-                value_cm_min, value_cm_max,
-                value_inches_min, value_inches_max
-              </Text>
-            </Stack>
-          </Card>
+                  {/* Data Table */}
+                  <DataTable
+                    // Removed Visibility column
+                    columnContentTypes={["text", "text", "text", "text", "text"]}
+                    headings={[
+                      "Brand",
+                      "Specialist Category",
+                      "Mapped Sizes",
+                      "Last Modified",
+                      "Actions",
+                    ]}
+                    rows={filteredRows}
+                    footerContent={`Showing ${filteredRows.length} of ${rows.length} brands`}
+                    loading={loading}
+                  />
+                </Card.Section>
+              </Card>
+            </Stack.Item>
+
+            {/* 30% Block - CSV Upload */}
+            <Stack.Item fill={false} style={{ width: "30%" }}>
+              <Stack.Item fill={false} style={{ width: "30%" }}>
+                <CSVUpload onUploadSuccess={fetchBrands} />
+              </Stack.Item>
+            </Stack.Item>
+          </Stack>
         </Layout.Section>
       </Layout>
 
-      {/* TOAST */}
-      {toastActive && (
-        <Toast
-          content={toastMessage}
-          error={toastError}
-          onDismiss={() => setToastActive(false)}
-        />
-      )}
+      {/* Modal for Add/Edit Brand */}
+      <Modal
+        open={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setErrorMessage(""); // Clear error
+        }}
+        title={editingBrand ? "Edit Brand" : "Add Brand"}
+        primaryAction={{ content: "Save", onAction: handleSave }}
+        secondaryActions={[{
+          content: "Cancel",
+          onAction: () => {
+            setIsModalOpen(false);
+            setErrorMessage(""); // Clear error
+          }
+        }]}
+      >
+        <Modal.Section>
+          <TextField
+            label="Brand Name"
+            value={brandName}
+            onChange={setBrandName}
+            error={errorMessage ? errorMessage : undefined}
+          />
+        </Modal.Section>
+      </Modal>
     </Page>
   );
-};
-
-export default SizeDataManagement;
+}

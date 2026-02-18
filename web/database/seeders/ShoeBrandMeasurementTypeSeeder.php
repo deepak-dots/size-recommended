@@ -14,17 +14,19 @@ class ShoeBrandMeasurementTypeSeeder extends Seeder
      */
     public function run()
     {
-        $shoeBrands= DB::table('shoe_brands')->pluck('id');
-        $shoeMeasurements = DB::table('shoe_measurement_types')->pluck('id');
+        $shoeBrands = DB::table('shoe_brands')->get();
+        $shoeMeasurements = DB::table('shoe_measurement_types')->get();
 
         foreach ($shoeBrands as $shoeBrand) {
             foreach ($shoeMeasurements as $shoeMeasurement) {
-                DB::table('shoe_brand_measurement_types')->insert([
-                    'shoe_brands_id' => $shoeBrand,
-                    'shoe_measurement_types_id' => $shoeMeasurement,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                if (($shoeBrand->name == 'Friendly Shoes' && $shoeMeasurement->code != 'E (instep)')|| $shoeBrand->name != 'Friendly Shoes' ) {
+                    DB::table('shoe_brand_measurement_types')->insert([
+                        'shoe_brands_id' => $shoeBrand->id,
+                        'shoe_measurement_types_id' => $shoeMeasurement->id,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
             }
         }
     }

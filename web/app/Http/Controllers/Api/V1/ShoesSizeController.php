@@ -105,9 +105,10 @@ class ShoesSizeController extends ApiController
                         $q->where('min_cm_size', '<=', $length)
                             //->where('max_cm_size', '>', $length - $insertBuffer);
                             ->where('max_cm_size', '>=', $length - $insertBuffer);
-                    } else {
+                    } elseif ($unit === 'inches') {
                         $q->where('min_in_size', '<=', $length)
-                            ->where('max_in_size', '>', $length - $insertBuffer);
+                            //->where('max_in_size', '>', $length - $insertBuffer);
+                            ->where('max_in_size', '>=', $length - $insertBuffer);    
                     }
                 });
 
@@ -151,7 +152,9 @@ class ShoesSizeController extends ApiController
     public function importCSV(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'csv_file' => 'required|file|mimes:csv|max:20480', // max 20MB
+            // 'csv_file' => 'required|file|mimes:csv|max:20480', // max 20MB
+            'csv_file' => 'required|file|mimetypes:text/plain,text/csv,application/csv,application/vnd.ms-excel|max:20480',
+
         ]);
 
         if ($validator->fails()) {

@@ -10,13 +10,13 @@ class Kernel extends HttpKernel
      * The application's global HTTP middleware stack.
      */
     protected $middleware = [
-        \Fruitcake\Cors\HandleCors::class, // Number 1 priority
+        \Fruitcake\Cors\HandleCors::class, 
         \App\Http\Middleware\TrustProxies::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        // \App\Http\Middleware\AccessControlHeaders::class, <--- ISKO DELETE YA COMMENT KAREIN
+        // \App\Http\Middleware\AccessControlHeaders::class,
     ];
 
     /**
@@ -36,7 +36,6 @@ class Kernel extends HttpKernel
         'api' => [
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            // Yahan koi extra CORS middleware mat rakhein
         ],
     ];
 

@@ -20,6 +20,8 @@ class GenderSeeder extends Seeder
             DB::table('shoe_genders')->insert([
                 ['name' => 'Women', 'shoe_brand_id' => $brandId, 'internal_group' => 'adult', 'created_at' => now(), 'updated_at' => now()],
                 ['name' => 'Men', 'shoe_brand_id' => $brandId, 'internal_group' => 'adult', 'created_at' => now(), 'updated_at' => now()],
+                ['name'=> 'Kids', 'shoe_brand_id' => $brandId, 'internal_group' => 'kids', 'created_at' => now(), 'updated_at' => now()],
+                ['name'=> 'Toddler', 'shoe_brand_id' => $brandId, 'internal_group' => 'kids', 'created_at' => now(), 'updated_at' => now()],
             ]);
         }
     }

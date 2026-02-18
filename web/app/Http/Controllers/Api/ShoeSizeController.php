@@ -49,14 +49,16 @@ class ShoeSizeController extends Controller
         $rightLength = floatval($request->measurements['right']['A']);
 
         // OLD logic (largest foot)
-        $finalLength = max($leftLength, $rightLength);
+        //$finalLength = max($leftLength, $rightLength);
 
         // Convert inches → cm
         if ($request->unit === 'in') {
             $leftLength  *= 2.54;
             $rightLength *= 2.54;
-            $finalLength *= 2.54;
+           // $finalLength *= 2.54;
         }
+
+        $finalLength = max($leftLength, $rightLength);
 
         // ================= QUERY =================
         $query = ShoesSizeChart::where('brand_id', $brand->id)

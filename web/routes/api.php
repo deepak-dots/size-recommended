@@ -41,6 +41,9 @@ Route::prefix('proxy')->group(function () {
     Route::prefix('v1')->group(function () {
         Route::get('/product-categories', [ProductCategoryController::class, 'getProductCategories']);
         Route::get('/brands-list', [BrandController::class, 'index']);
+        Route::post('brands', [BrandController::class, 'store']);     
+        Route::put('brands/{id}', [BrandController::class, 'update']);
+        Route::delete('brands/{id}', [BrandController::class, 'destroy']); 
         Route::get('/shoe-genders/{shoe_brand_id}', [ShoeGenderController::class, 'index']);
         Route::get('/shoe-styles/{shoe_brand_id}/{shoe_gender_id}', [ShoeStyleController::class, 'index']);
         Route::get('/shoe-measurements', [ShoeMeasurementController::class, 'index']);

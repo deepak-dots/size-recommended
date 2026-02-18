@@ -9,6 +9,8 @@ class ShoeBrand extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name'];
+
     public function measurementTypes()
     {
         return $this->belongsToMany(
