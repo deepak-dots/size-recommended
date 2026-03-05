@@ -20,4 +20,9 @@ class ShoeBrand extends Model
             'shoe_measurement_types_id'
         );
     }
+
+    public function sizes()
+    {
+        return $this->hasMany(ShoeSize::class, 'shoe_brands_id');
+    }
 }

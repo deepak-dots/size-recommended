@@ -10,7 +10,16 @@ use App\Http\Controllers\Api\V1\{
     ProductCategoryController,
     ShoeMeasurementController,
     ShoesSizeController,
-    ShoeStyleController
+    ShoeStyleController,
+    ClothsSizeImportController,
+    ClothsSizeFinderController,
+    ClothsBrandsController,
+    ClothsProductTypesController,
+    ClothsStylesController,
+    ClothesCategoryController,
+    ClothsMeasurementController,
+    ClothesSizeChartController,
+    SizeReportController,
 };
 
 /*
@@ -52,6 +61,29 @@ Route::prefix('proxy')->group(function () {
         Route::post('/shoes-sizes', [ShoesSizeController::class, 'findSize']);
 
         Route::post('/import-csv', [ShoesSizeController::class, 'importCSV']);
+        Route::get('/export-csv', [ShoesSizeController::class, 'exportCSV']);
+        Route::get('/sample-csv', [ShoesSizeController::class, 'downloadSampleCSV']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Cloths Size Endpoints
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post('/clothes/import-csv', [ClothsSizeImportController::class, 'importClothCSV']);
+        Route::get('/clothes/brands', [ClothsBrandsController::class, 'index']);
+        Route::post('/clothes/brands', [ClothsBrandsController::class, 'store']);
+        Route::put('/clothes/brands/{id}', [ClothsBrandsController::class, 'update']);
+        Route::delete('/clothes/brands/{id}', [ClothsBrandsController::class, 'destroy']);
+        Route::get('/clothes/clothes-categories/{brand_id}', [ClothesCategoryController::class, 'index']);
+        Route::get('/clothes/clothes-product-types/{category_id}', [ClothsProductTypesController::class, 'index']);
+        Route::get('/clothes/clothes-styles/{product_type_id}', [ClothsStylesController::class, 'index']);
+        Route::get('/clothes/clothes-measurements', [ClothsMeasurementController::class, 'index']);
+        Route::get('/clothes/clothes-size-charts', [ClothesSizeChartController::class, 'index']);
+        Route::post('/clothes/clothes-sizes', [ClothsSizeFinderController::class, 'findClothSize']);
+
+        // Send report on klaviyo and mail
+          Route::post('/send-size-report', [SizeReportController::class, 'send']);
     });
 });
 

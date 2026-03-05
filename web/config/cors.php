@@ -2,17 +2,11 @@
 
 return [
 
-    /*
-    |--------------------------------------------------------------------------
-    | Cross-Origin Resource Sharing (CORS) Configuration
-    |--------------------------------------------------------------------------
-    */
-
-    'paths' => ['api/*', 'proxy/*', 'sanctum/csrf-cookie'], 
+    'paths' => ['api/*', 'proxy/*'],
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['*'], // use * for dev; in production, replace with your frontend URL
 
     'allowed_origins_patterns' => [],
 
@@ -25,4 +19,6 @@ return [
     'supports_credentials' => false,
 
 ];
+
+
 

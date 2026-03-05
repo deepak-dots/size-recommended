@@ -13,6 +13,7 @@ class BrandController extends ApiController
     public function index()
     {
         $brands = ShoeBrand::select('id', 'name', 'created_at', 'updated_at')
+            ->withMax('sizes', 'updated_at')
             ->orderBy('id', 'asc')
             ->get();
 

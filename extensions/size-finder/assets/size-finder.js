@@ -1,30 +1,33 @@
 document.addEventListener("DOMContentLoaded", () => {
-    const BASE_URL = " https://from-breach-bearing-reports.trycloudflare.com/api/proxy";
+    const BASE_URL = "http://127.0.0.1:53951/api/proxy";
 
-    const modal = document.getElementById("sf-modal");
-    const closeBtn = document.getElementById("sf-close");
-    const closeBtnbtm = document.getElementById("sf-close-apply");
+    const modal = document.querySelector(".sf-modal");
+    const closeBtn = document.querySelector(".sf-close");
+    const closeBtnbtm = document.querySelector(".sf-close-apply");
 
-    const step1 = document.getElementById("sf-step-1");
-    const step2 = document.getElementById("sf-step-2");
-    const step3 = document.getElementById("sf-step-3");
+    const step1 = document.querySelector(".sf-step-1");
+    const step2 = document.querySelector(".sf-step-2");
+    const step3 = document.querySelector(".sf-step-3");
 
-    const brandSelect = document.getElementById("sf-brand");
-    const genderSelect = document.getElementById("sf-gender");
-    const styleSelect = document.getElementById("sf-style");
-    const measurementBox = document.getElementById("sf-measurements");
-    const resultBox = document.getElementById("sf-result");
-    const errorBox = document.getElementById("sf-error");
+    const brandSelect = document.querySelector(".sf-brand");
+    const genderSelect = document.querySelector(".sf-gender");
+    const styleSelect = document.querySelector(".sf-style");
+    const measurementBox = document.querySelector(".sf-measurements");
+    const resultBox = document.querySelector(".sf-result");
+    const sizeReportBox = document.querySelector(".size-report");
+    const errorBox = document.querySelector(".sf-error");
 
     let brandId = "", shoeType = "", styleId = "";
-    let category = "Shoes", unit = "cm", insertRemoval = false, width = "Medium", foot = "both";
+    let category = "Shoes", unit = "cm", insertRemoval = false, width = "", foot = "both";
     let measurementKeys = [], measurements = { left: {}, right: {} };
     let step = 1, braceOption = "No Brace";
 
-    const removalCheckbox = document.getElementById("sf-removal");
-    const backStep1 = document.getElementById("sf-back-step-1");
-    const backStep2 = document.getElementById("sf-back-step-2");
-    const emailInput = document.getElementById("sf-email");
+    const removalCheckbox = document.querySelector(".sf-removal");
+    const backStep1 = document.querySelector(".sf-back-step-1");
+    const backStep2 = document.querySelector(".sf-back-step-2");
+    const emailInput = document.querySelector(".sf-email");
+
+
 
     function clearStep1Error() {
         errorBox.innerText = "";
@@ -40,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!genderSelect.value) {
-        errorBox.innerText = "Please select shoe type";
+        errorBox.innerText = "Please select shoe category";
         errorBox.classList.add("show");
         return false;
     }
@@ -59,11 +62,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // ================= MODAL OPEN =================
     document.querySelectorAll(".sf-open").forEach(btn => {
         btn.addEventListener("click", () => {
+            
             modal.classList.add("active");
             document.body.classList.add("app-modal-open");
+            console.log("Opening cloth size finder modal");
 
-            reset();
-            loadBrands();
+            resetShoes();
+            loadBrandsShoes();
 
            setDefaultSelections();
         });
@@ -75,7 +80,12 @@ document.addEventListener("DOMContentLoaded", () => {
             btn.addEventListener("click", () => {
                 modal.classList.remove("active");
                 document.body.classList.remove("app-modal-open");
-                reset();
+
+                resetShoes();
+
+                if (window.resetSizeFinderCategory) {
+                    window.resetSizeFinderCategory();
+                }
             });
         }
     });
@@ -142,37 +152,59 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 0);
     }
 
-    // ================= RESET =================
-    function reset() {
+    // ================= resetShoes =================
+    function resetShoes() {
+
+        // Reset Steps
+        step = 1;
         step1.style.display = "block";
         step2.style.display = "none";
         step3.style.display = "none";
 
-        brandSelect.innerHTML = "";
-        genderSelect.innerHTML = "";
-        styleSelect.innerHTML = "";
+        // Clear dropdowns
+        brandSelect.innerHTML = `<option value="">Select Brand</option>`;
+        genderSelect.innerHTML = `<option value="">Select Shoe category</option>`;
+        styleSelect.innerHTML = `<option value="">Select Style</option>`;
+
+        // Clear dynamic content
         measurementBox.innerHTML = "";
         resultBox.innerHTML = "";
         errorBox.innerText = "";
+        errorBox.classList.remove("show");
 
-        brandId = shoeType = styleId = "";
+        // Clear email
+        if (emailInput) emailInput.value = "";
+
+        // Reset variables
+        brandId = "";
+        shoeType = "";
+        styleId = "";
         measurementKeys = [];
         measurements = { left: {}, right: {} };
-        step = 1;
         insertRemoval = false;
+        width = "";
+        foot = "both";
+        braceOption = "No Brace";
+        unit = "cm";
 
+        // Reset checkboxes
         if (removalCheckbox) removalCheckbox.checked = false;
 
-        braceOption = "No Brace";
-        document.querySelectorAll('input[name="sf-brace"]').forEach(radio => radio.checked = radio.value === braceOption);
+        // Reset radio buttons
+        document.querySelectorAll('input[name="sf-unit"]').forEach(radio => {
+            radio.checked = radio.value === "cm";
+        });
 
-        unit = "cm";
-        document.querySelectorAll('input[name="sf-unit"]').forEach(radio => radio.checked = radio.value === unit);
+        document.querySelectorAll('input[name="sf-brace"]').forEach(radio => {
+            radio.checked = radio.value === "No Brace";
+        });
 
-        setTimeout(() => {
-            document.querySelector('input[name="sf-unit"]:checked')?.dispatchEvent(new Event("change"));
-            document.querySelector('input[name="sf-brace"]:checked')?.dispatchEvent(new Event("change"));
-        }, 0);
+        if (sizeReportBox) sizeReportBox.style.display = "none";
+
+        // Reload brands again
+        loadBrandsShoes();
+
+        console.log("Modal fully reset");
     }
 
     // ================= UPDATE BRAND UI =================
@@ -200,7 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ================= LOAD BRANDS =================
-    async function loadBrands() {
+    async function loadBrandsShoes() {
         brandSelect.innerHTML = "<option>Loading...</option>";
         const res = await fetch(`${BASE_URL}/v1/brands-list`);
         const json = await res.json();
@@ -211,15 +243,15 @@ document.addEventListener("DOMContentLoaded", () => {
     // ================= LOAD GENDERS =================
     brandSelect.onchange = async () => {
 
+     clearStep1Error();    
+
     brandId = brandSelect.value;
 
-    // Reset dependent dropdowns
+    // resetShoes dependent dropdowns
     genderSelect.innerHTML = `<option value="">Select Shoe Type</option>`;
     styleSelect.innerHTML = `<option value="">Select Style</option>`;
     shoeType = "";
     styleId = "";
-
-    validateStep1(); // ✅ ADD THIS
 
     if (!brandId) return;
 
@@ -239,12 +271,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // ================= LOAD STYLES =================
     genderSelect.onchange = async () => {
 
+    clearStep1Error();   
+
     shoeType = genderSelect.value;
 
     styleSelect.innerHTML = `<option value="">Select Style</option>`;
     styleId = "";
-
-    validateStep1(); // ✅ ADD
 
     if (!shoeType) return;
 
@@ -254,32 +286,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const json = await res.json();
 
     styleSelect.innerHTML = `<option value="">Select Style</option>`;
-    json.data.forEach(s =>
-        styleSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`
-    );
+    const selectedBrandName = brandSelect.options[brandSelect.selectedIndex]?.text.toLowerCase() || "";
+    const isBilly = selectedBrandName.includes("billy");
+
+    json.data.forEach(s => {
+        if (isBilly && s.width_group) {
+            styleSelect.innerHTML += `<option value="${s.id}">${s.name} - ${s.width_group}</option>`;
+        } else {
+            styleSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+        }
+    });
 };
 
    styleSelect.onchange = () => {
+    clearStep1Error();
     styleId = styleSelect.value;
-    validateStep1(); // ✅ ADD
 };
 
-    // ================= NEXT STEP =================
-    document.getElementById("sf-next").onclick = async () => {
+    document.querySelector(".sf-next").onclick = async () => {
         errorBox.innerText = "";
         errorBox.classList.remove("show");
 
-        if (!validateStep1()) return;
+        if (!validateStep1()) return; //  If validation fails → stop here
+
+        //  Hide category ONLY after validation success
+        const categoryBlock = document.querySelector(".sf-category-btn-wraper");
+        if (categoryBlock) categoryBlock.style.display = "none";
 
         step1.style.display = "none";
         step2.style.display = "block";
         step = 2;
 
-        await loadMeasurements();
+        await loadMeasurementsShoes();
     };
 
     // ================= LOAD MEASUREMENTS =================
-    async function loadMeasurements() {
+    async function loadMeasurementsShoes() {
         measurementBox.innerHTML = "Loading measurements...";
         const res = await fetch(`${BASE_URL}/v1/shoe-measurements?brand_id=${brandId}`);
         const json = await res.json();
@@ -289,6 +331,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const selectedBrandName = brandSelect.options[brandSelect.selectedIndex].text.toLowerCase();
         const isBilly = selectedBrandName.includes("billy");
+	
+	const MAX_LENGTH = 7;
 
         ["left", "right"].forEach(side => {
             const title = document.createElement("h4");
@@ -321,8 +365,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 input.min = "0";
                 input.step = "0.001";
 
-                input.addEventListener("keydown", e => { if(e.key==="-"||e.key==="e") e.preventDefault(); });
-                input.addEventListener("input", function(){ if(this.value<0)this.value=""; });
+                //input.addEventListener("keydown", e => { if(e.key==="-"||e.key==="e") e.preventDefault(); });
+                //input.addEventListener("input", function(){ if(this.value<0)this.value=""; });
+		
+		// Prevent invalid keys
+		    input.addEventListener("keydown", e => { 
+			if (e.key === "-" || e.key === "e") e.preventDefault(); 
+		    });
+
+		    // Character limit + negative check
+		    input.addEventListener("input", function () {
+			if (this.value.length > MAX_LENGTH) {
+			    this.value = this.value.slice(0, MAX_LENGTH);
+			}
+			if (this.value < 0) {
+			    this.value = "";
+			}
+		    });
 
                 wrapper.appendChild(label);
                 wrapper.appendChild(input);
@@ -336,7 +395,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ================= SUBMIT =================
-    document.getElementById("sf-submit").onclick = async () => {
+    document.querySelector(".sf-submit").onclick = async () => {
         errorBox.innerText = "";
         resultBox.innerHTML = "";
 
@@ -355,6 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
         step2.style.display="none";
         step3.style.display="block";
         step=3;
+        if (sizeReportBox) sizeReportBox.style.display = "none";
         resultBox.innerHTML="Finding your perfect size...";
 
         try {
@@ -365,23 +425,151 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const data=await res.json();
 
-            if(data.status==="success" && data.data){
-                resultBox.innerHTML=`
-                    <h2>MEASUREMENT COMPLETE</h2>
-                    <div class="summery-size-box">
-                        <p>Category: ${data.data.shoe_gender?.name||""}</p>
-                        <p>Brand: ${data.data.shoe_brand?.name||""}</p>
-                        <p>Style: ${data.data.shoe_style?.name||""}</p>
-                        <p>Brace Option: ${braceOption}</p>
-                    </div>
-                    <div class="recommended-size-box" style="background:#f5f5f5;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
-                        <h3>Recommended Size</h3>
-                        <h4>UK ${data.data.uk_size} - ${data.data.shoe_style?.width_group ? `(${data.data.shoe_style.width_group})` : ""} </h4>
-                        <p>US ${data.data.us_size} | EU ${data.data.eu_size}</p>
+            
+
+            if (data.status === "success" && data.data?.recommended_size) {
+
+                if (sizeReportBox) sizeReportBox.style.display = "block";
+
+                const result = data.data;
+                const recommended = result.recommended_size;
+                const allSizes = result.all_sizes || [];
+                const minSize = result.min_size;
+                const maxSize = result.max_size;
+                const isBetween = result.is_between;
+
+                const selectedBrandName = recommended?.shoe_brand?.name?.toLowerCase() || "";
+                const isBilly = selectedBrandName.includes("billy");
+
+                resultBox.innerHTML = `
+                    <h2 style="text-align: center;">MEASUREMENT COMPLETE</h2>
+                    <div class="summery-size-box-report-summary">
+                        <div class="summery-size-box">
+                            <p>Category: ${recommended?.shoe_gender?.name || ""}</p>
+                            <p>Brand: ${recommended?.shoe_brand?.name || ""}</p>
+                            <p>Style: ${recommended?.shoe_style?.name || ""}</p>
+                            <p>Brace Option: ${braceOption || ""}</p>
+                        </div>
+
+                        <div class="recommended-size-box" 
+                            style="background:#f5f5f5;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
+                            
+                            <h3 style="text-align: center;">Recommended Size</h3>
+
+                            ${isBilly ? `
+                                <h4 style="text-align: center;">
+                                    UK: ${recommended?.uk_size ?? "-"} 
+                                    ${
+                                        recommended?.shoe_style?.width_group 
+                                        ? `(${recommended.shoe_style.width_group})` 
+                                        : ""
+                                    }
+                                </h4>
+
+                                <p>
+                                    US: ${recommended?.us_size ?? "-"} | 
+                                    EU: ${recommended?.eu_size ?? "-"}
+                                </p>
+                            ` : `
+                                <h4 style="text-align: center;">
+                                    UK: ${recommended?.uk_size ?? "-"}
+                                </h4>
+                            `}
+
+                            ${
+                                isBetween && allSizes.length > 1
+                                ? `
+                                <div style="margin-top:15px;padding:12px;">
+                                You're between Size UK ${minSize} and ${maxSize}. 
+                                    We recommend Size 
+                                    <strong> 
+                                        UK ${recommended?.uk_size ?? "-"} 
+                                        ${recommended?.shoe_style?.width_group 
+                                            ? `(${recommended.shoe_style.width_group})` 
+                                            : ""} 
+                                    </strong>
+                                    for a more comfortable fit.
+                                </div>
+                                `
+                                : ""
+                            }
+                        </div>
                     </div>
                 `;
-            } else {
-                resultBox.innerHTML=`
+            }
+
+            /* ================= NEW SMART MESSAGE HANDLING ================= */
+            else if (data.status === "success" && !data.data?.recommended_size) {
+
+                //  Above Maximum Size Case
+                if (data.message?.toLowerCase().includes("above the maximum")) {
+
+                    resultBox.innerHTML = `
+                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
+                            <h3>${data.message}</h3>
+                            <p style="margin-top:10px;">
+                                Please enable the insert removal option and try again, please click on back button for this action.
+                            </p>
+                        </div>
+                    `;
+
+                    if (sizeReportBox) sizeReportBox.style.display = "none";
+                }
+
+                //  Multiple Sizes Found
+                else if (data.message?.toLowerCase().includes("multiple shoe sizes")) {
+
+                    resultBox.innerHTML = `
+                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
+                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                            <p style="margin-bottom:10px;">
+                                Based on the measurements entered, we can’t confidently recommend a size.
+                            </p>
+                            <p style="margin-bottom:10px;">This usually happens if:</p>
+                            <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
+                                <li>A number was mistyped</li>
+                                <li>Measurements were taken in different units</li>
+                                <li>A brace setting doesn’t match the measurements</li>
+                            </ul>
+                            <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
+                            <div style="margin-bottom:25px;">
+                                <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
+                                    Review My Measurements
+                                </button>
+                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
+                                    Start Again
+                                </button>
+                            </div>
+                            <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
+                                <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
+                                <p style="margin:5px 0;">Our team specialises in adaptive fitting.</p>
+                                <p style="margin:5px 0;">
+                                    📧 <a href="mailto:help@specialkids.company" style="color:#c2410c;text-decoration:none;">help@specialkids.company</a><br>
+                                    📞 +44 (0) 121 354 654
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    if (sizeReportBox) sizeReportBox.style.display = "none";
+                }
+
+                //  Any Other Success Message
+                else {
+                    resultBox.innerHTML = `
+                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
+                        <h3>We couldn’t confidently match a size yet.</h3>
+                        <p style="margin-top:10px;">Based on the measurements entered, we can’t confidently recommend a size.</p>
+                        <p>Email: <a href="mailto:help@specialkids.company">help@specialkids.company</a></p>
+                        <p>Telephone:<br>+44 (0) 121 354 6543 (UK)<br>+44 (0) 792 7200 762 (UK)</p>
+                    </div>
+                    `;
+                    if (sizeReportBox) sizeReportBox.style.display = "none";
+                }
+            }
+
+            /* ================= REAL ERROR ================= */
+            else {
+                resultBox.innerHTML = `
                     <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
                         <h3>It looks like the sizes may not have been entered correctly.</h3>
                         <p style="margin-top:10px;">Please contact our support team for assistance:</p>
@@ -389,16 +577,41 @@ document.addEventListener("DOMContentLoaded", () => {
                         <p>Telephone:<br>+44 (0) 121 354 6543 (UK)<br>+44 (0) 792 7200 762 (UK)</p>
                     </div>
                 `;
+                if (sizeReportBox) sizeReportBox.style.display = "none";
             }
         } catch(err){
             resultBox.innerHTML=`
-                <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
-                    <h3>It looks like the sizes may not have been entered correctly.</h3>
-                    <p style="margin-top:10px;">Please contact our support team for assistance:</p>
-                    <p>Email: <a href="mailto:help@specialkids.company">help@specialkids.company</a></p>
-                    <p>Telephone:<br>+44 (0) 121 354 6543 (UK)<br>+44 (0) 792 7200 762 (UK)</p>
+                <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;>
+                    <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                    <p style="margin-bottom:10px;">
+                        Based on the measurements entered, we can’t confidently recommend a size.
+                    </p>
+                    <p style="margin-bottom:10px;">This usually happens if:</p>
+                    <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
+                        <li>A number was mistyped</li>
+                        <li>Measurements were taken in different units</li>
+                        <li>A brace setting doesn’t match the measurements</li>
+                    </ul>
+                    <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
+                    <div style="margin-bottom:25px;">
+                        <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
+                            Review My Measurements
+                        </button>
+                        <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
+                            Start Again
+                        </button>
+                    </div>
+                    <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
+                        <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
+                        <p style="margin:5px 0;">Our team specialises in adaptive fitting.</p>
+                        <p style="margin:5px 0;">
+                            📧 <a href="mailto:help@specialkids.company" style="color:#c2410c;text-decoration:none;">help@specialkids.company</a><br>
+                            📞 +44 (0) 121 354 654
+                        </p>
+                    </div>
                 </div>
             `;
+            if (sizeReportBox) sizeReportBox.style.display = "none";
         }
     };
 });

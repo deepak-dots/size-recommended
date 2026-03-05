@@ -16,7 +16,7 @@ class ShoesSizeChartSeeder extends Seeder
             // ===== BILLY WOMEN =====
             [
                 'brand_id' => $brandBillyId,
-                'brand_name' => 'Billy',
+                'brand_name' => 'BILLY Footwear',
                 'collection' => 'Main',
                 'category' => 'Women',
                 'width_label' => 'Medium',
@@ -31,7 +31,7 @@ class ShoesSizeChartSeeder extends Seeder
             ],
             [
                 'brand_id' => $brandBillyId,
-                'brand_name' => 'Billy',
+                'brand_name' => 'BILLY Footwear',
                 'collection' => 'Main',
                 'category' => 'Women',
                 'width_label' => 'Wide',
@@ -48,7 +48,7 @@ class ShoesSizeChartSeeder extends Seeder
             // ===== BILLY MEN =====
             [
                 'brand_id' => $brandBillyId,
-                'brand_name' => 'Billy',
+                'brand_name' => 'BILLY Footwear',
                 'collection' => 'Main',
                 'category' => 'Men',
                 'width_label' => 'Medium',
@@ -65,7 +65,7 @@ class ShoesSizeChartSeeder extends Seeder
             // ===== BILLY KIDS =====
             [
                 'brand_id' => $brandBillyId,
-                'brand_name' => 'Billy',
+                'brand_name' => 'BILLY Footwear',
                 'collection' => 'Main',
                 'category' => 'Kids',
                 'width_label' => 'Medium',
@@ -80,7 +80,7 @@ class ShoesSizeChartSeeder extends Seeder
             ],
             [
                 'brand_id' => $brandBillyId,
-                'brand_name' => 'Billy',
+                'brand_name' => 'BILLY Footwear',
                 'collection' => 'Main',
                 'category' => 'Kids',
                 'width_label' => 'Medium',

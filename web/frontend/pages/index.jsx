@@ -42,11 +42,14 @@ export default function SizeDataManagement() {
         <Badge>{brand.category || "General"}</Badge>,
         brand.mapped_sizes || "-",
         // Fixed Last Modified column
-        brand.updated_at
-          ? new Date(brand.updated_at).toLocaleString()
-          : new Date(brand.created_at).toLocaleString(),
+        brand.sizes_max_updated_at
+          ? new Date(brand.sizes_max_updated_at).toLocaleString()
+          : new Date(brand.sizes_max_updated_at).toLocaleString(),
         // Actions stack remains
         <Stack spacing="tight">
+          <Button plain onClick={() => downloadCSV(brand.id)}>
+              Export
+          </Button>
           <Button plain icon={EditMinor} onClick={() => openEditModal(brand)} />
           <Button plain icon={DeleteMinor} destructive onClick={() => deleteBrand(brand.id)} />
         </Stack>,
@@ -118,6 +121,43 @@ export default function SizeDataManagement() {
     }
   };
 
+  // CSV Download
+  const downloadCSV = async (brandId = null, genderId = null) => {
+    try {
+      let url = "/api/proxy/v1/export-csv?";
+
+      if (brandId) url += `brand_id=${brandId}&`;
+      if (genderId) url += `shoe_genders_id=${genderId}`;
+
+      const response = await axios.get(url, {
+        responseType: "blob",
+      });
+
+      const blob = new Blob([response.data], { type: "text/csv" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+
+      if (brandId && genderId) {
+        link.download = `brand_${brandId}_gender_${genderId}.csv`;
+      } else if (brandId) {
+        link.download = `brand_${brandId}.csv`;
+      } else {
+        link.download = "all_shoe_sizes.csv";
+      }
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      window.URL.revokeObjectURL(downloadUrl);
+
+    } catch (error) {
+      console.error("CSV download failed:", error);
+    }
+  };
+
   return (
     <Page
       fullWidth
@@ -152,9 +192,15 @@ export default function SizeDataManagement() {
                       value={search}
                       onChange={setSearch}
                     />
-                    <Button primary icon={PlusMinor} onClick={openAddModal}>
-                      Add Brand
-                    </Button>
+                    <Stack spacing="tight">
+                      <Button onClick={() => downloadCSV()}>
+                        Export All Sizes
+                      </Button>
+
+                      <Button primary icon={PlusMinor} onClick={openAddModal}>
+                        Add Brand
+                      </Button>
+                    </Stack>
                   </Stack>
 
                   {/* Data Table */}

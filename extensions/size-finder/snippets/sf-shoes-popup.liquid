@@ -1,0 +1,236 @@
+<!-- ================= STEP 1 ================= -->
+<div class="sf-step-1">
+    <div class="padd-20 sf-step-inner">
+        <!-- <div class="title-box">
+            <div class="step-label">STEP 1 OF 4</div>
+            <h2>What would you like to measure ?</h2>
+            <p>
+                Select a category to get sizing recommendations tailored for you.
+            </p>
+        </div>
+
+        <div class="measure-btn-row">
+            <button class="sf-category-btn active">
+                <i>
+                    <img src="{{ 'shoes_shoe_icon.svg' | asset_url }}"
+                            alt="Measurement Icon"
+                            class="sf-icon-img" />
+                </i>
+                Shoes
+            </button>
+
+            <button class="sf-category-btn">
+                <i>
+                    <img src="{{ 'clothes_icon.svg' | asset_url }}"
+                            alt="clothes hanger Icon"
+                            class="sf-icon-img" />
+                </i>
+                Clothing
+            </button>
+        </div> -->
+
+        <!-- BRAND -->
+        <div class="brand-size-box">
+            <label>
+                Select your brand 
+                <select class="sf-brand"></select>
+            </label>
+
+            <!-- GENDER / SHOE TYPE -->
+            <label style="margin-top:15px">
+                Who is this for?
+                <select class="sf-gender">
+                    <option value="">Select category type</option>
+                </select>
+            </label>
+
+            <!-- STYLE -->
+            <label style="margin-top:15px" class="style-full-width">
+                Which style are you shopping for?
+                <select class="sf-style">
+                    <option value="">Select style</option>
+                </select>
+            </label>
+        </div>
+
+        <!-- Error message -->
+        <div class="sf-error"></div>
+
+        <div class="center-box">
+            <button class="sf-next sf-primary-btn popupBtn next-first-hide-product-cate">
+                Next Step →
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= STEP 2 ================= -->
+<div class="sf-step-2" style="display:none">
+    <div class="product-detail-col">
+
+        <div class="product-col-left">
+            <div class="musturement-guide">
+
+                <h2>Reference Diagram</h2>
+                <p class="subtitle">
+                    Where to Measure, Match your measurements to the diagram.
+                </p>
+
+                <div class="card">
+                    <div class="foot-area billy-footwear">
+                        <img src="{{ 'billy.png' | asset_url }}"
+                                width="384" height="467" alt="clothes" />
+                    </div>
+                    <div class="foot-area friendly-footwear">
+                        <img src="{{ 'friendly.png' | asset_url }}"
+                                width="384" height="467" alt="clothes" />
+                    </div>
+                </div>
+
+                <div class="labels billy-footwear">
+                    <div class="label-item">A: Foot Length, Heel to longest toe - or length of AFO</div>
+                    <div class="label-item">D: Forefoot, Around the widest part of your foot</div>
+                    <div class="label-item">E: Instep circumferene, The circumference of the instep at the highest point</div>
+                </div>
+
+                <div class="labels friendly-footwear">
+                    <div class="label-item">A: Foot Length, Heel to longest toe - or length of AFO</div>
+                    <div class="label-item">D: Forefoot, Around the widest part of your foot</div>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-icon">i</div>
+                    <div class="info-text">
+                        <strong>String Method Guide:</strong>
+                       No measuring tape? Wrap string around the area, mark where it meets, then measure the string against a ruler.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="product-col-right">
+            <div class="title-box">
+                <div class="step-label">STEP 2 OF 4</div>
+                <h2 style="text-align: left;">Measure your Feet</h2>
+                <p style="text-align: left; color:#006c75;">Follow the guide below to get the most accurate fit.</p>
+            </div>
+
+            <div class="sf-brace-wrapper" style="margin-bottom:15px;">
+                <label class="sf-brace-title">
+                   Will you wear a splint (AFO) with these shoes? If using an AFO/splint, measure while wearing it.
+                </label>
+
+                <div class="sf-brace-radio sf-unit-radio">
+                    <label>
+                        <input type="radio" name="sf-brace"
+                                value="No Brace" checked>
+                        <span>No splint</span>
+                    </label>
+
+                    <label>
+                        <input type="radio" name="sf-brace"
+                                value="Brace">
+                        <span>I wear a splint</span>
+                    </label>
+                </div>
+            </div>
+             <div class="sf-unit-wrapper">
+                <label class="sf-brace-title">
+                    Choose your unit of measurement
+                </label>
+
+                <div class="tab-btn-row sf-unit-radio"
+                        style="margin-bottom:15px;">
+
+                    <label>
+                        <input type="radio" name="sf-unit"
+                                value="cm" checked>
+                        <span>CM</span>
+                    </label>
+
+                    <label>
+                        <input type="radio" name="sf-unit"
+                                value="inches">
+                        <span>INCH</span>
+                    </label>
+
+                </div>
+             </div>
+
+            <!-- Dynamic Measurements -->
+            <div class="title-box">
+                <p style="text-align: left; color:#006c75;">Enter measurements to 1 decimal place (e.g. 23.4)</p>
+            </div>
+            
+            <div class="sf-measurements"></div>
+
+            <div class="sf-removal-wrapper">
+                <label class="sf-removal-line">
+                    <input type="checkbox" class="sf-removal">
+                    <span>Insert Removal</span>
+                </label>
+            </div>
+
+            <div class="product-btn-row">
+                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn back-first-show-product-cate">
+                    ← Back
+                </button>
+
+                <button class="sf-submit sf-primary-btn popupBtn">
+                    Find My Best Fit  →
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ================= STEP 3 ================= -->
+<div class="sf-step-3" style="display:none">
+    <div class="padd-20 sf-step-inner success-box-wrapper">
+
+        <div class="success-box" style="text-align: center;">
+            <img src="{{ 'check-badge.svg' | asset_url }}"
+                    width="70" height="70" alt="clothes" />
+
+            <div class="sf-result sf-result-box" style="text-align: center;">
+                <span class="sf-loading">
+                    Calculating size…
+                </span>
+            </div>
+        </div>
+
+        <div style="margin-top:20px;text-align:center;">
+            <button class="sf-back-step-2 sf-secondary-btn popupBackBtn"
+                    type="button">
+                ← Back
+            </button>
+        </div>
+
+        <div class="size-report">
+            <p><strong>Save Your Measurements</strong></p>
+
+            <p style="font-size:13px; color:#666">
+                Enter your email to receive: Your entered measurements, A detailed fit summary, Guidance for speaking to our team.
+            </p>
+            <div class="size-report-inner">
+                <input type="email"
+                        class="sf-email"
+                        placeholder="Enter your email address">
+
+                <button class="sf-send-email sf-secondary-btn popupBtn"
+                        style="width:100%; margin-top:10px">
+                   Send My Fit Summary
+                </button>
+            </div>
+        </div>
+
+        <button class="sf-close-apply sf-primary-btn popupBtn back-first-show-product-cate">
+             Close Tool
+        </button>
+
+    </div>
+</div>
+
+ 

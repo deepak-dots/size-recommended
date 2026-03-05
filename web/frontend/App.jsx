@@ -22,9 +22,13 @@ export default function App() {
           <QueryProvider>
             <NavigationMenu
               navigationLinks={[
-                {
-                  label: 'Size data management',
-                  destination: "/SizeDataManagement",
+              { 
+                  label: 'Shoe Size data management',
+                  destination: "/",
+                },
+                { 
+                  label: 'Cloth Size data management',
+                  destination: "/ClothSizeDataManagement",
                 },
                 {
                   label: 'User analytics',
@@ -38,10 +42,6 @@ export default function App() {
                   label: 'Help center',
                   destination: "/HelpCenter",
                 },
-                {
-                  label: 'New Finder Size',
-                  destination: "/FinderMySize",
-                }
               ]}
             />
             <Routes pages={pages} />

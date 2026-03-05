@@ -1,13 +1,5 @@
 import { useState, useRef } from "react";
-import {
-  Card,
-  Button,
-  Text,
-  Stack,
-  Toast,
-  Frame,
-  Modal
-} from "@shopify/polaris";
+import { Card, Button, Text, Stack, Toast, Frame, Modal } from "@shopify/polaris";
 import axios from "axios";
 
 export default function CSVUpload({ onUploadSuccess }) {
@@ -24,7 +16,7 @@ export default function CSVUpload({ onUploadSuccess }) {
     if (!file) return;
 
     setSelectedFile(file);
-    setModalOpen(true);
+    setModalOpen(true); // Show confirmation modal
   };
 
   // Confirm Upload
@@ -36,59 +28,27 @@ export default function CSVUpload({ onUploadSuccess }) {
 
     try {
       setLoading(true);
-
       const response = await axios.post(
-        "/api/proxy/v1/import-csv",
+        "api/proxy/v1/clothes/import-csv",
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
       );
 
-      setToast({
-        content: response.data.message || "CSV uploaded successfully",
-        error: false,
-      });
+      setToast({ content: response.data.message || "CSV uploaded successfully", error: false });
 
       onUploadSuccess && onUploadSuccess();
+
     } catch (error) {
-      setToast({
-        content: "Failed to upload CSV",
-        error: true,
-      });
+      setToast({ content: "Failed to upload CSV", error: true });
     } finally {
       setLoading(false);
       setModalOpen(false);
       setSelectedFile(null);
 
+      // IMPORTANT: Reset input so same file can be uploaded again
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
-    }
-  };
-
-  // ✅ Download Sample CSV
-  const handleDownloadSample = async () => {
-    try {
-      const response = await axios.get(
-        "/api/proxy/v1/sample-csv",
-        { responseType: "blob" }
-      );
-
-      const blob = new Blob([response.data], { type: "text/csv" });
-      const url = window.URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "sample_shoe_import.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      setToast({
-        content: "Failed to download sample CSV",
-        error: true,
-      });
     }
   };
 
@@ -106,24 +66,16 @@ export default function CSVUpload({ onUploadSuccess }) {
         <Card.Section>
           <Stack vertical spacing="tight">
             <Text variant="headingSm">Upload CSV</Text>
-
             <Text as="p">
-              Download the sample CSV format first, then upload your filled file.
+              Upload your brand CSV including all sizing and measurement data.
             </Text>
 
-            {/* ✅ Upload + Download Buttons */}
-            <Stack spacing="tight">
-              <Button
-                loading={loading}
-                onClick={() => fileInputRef.current.click()}
-              >
-                Upload CSV
-              </Button>
-
-              <Button onClick={handleDownloadSample}>
-                Download Sample CSV
-              </Button>
-            </Stack>
+            <Button
+              loading={loading}
+              onClick={() => fileInputRef.current.click()}
+            >
+              Upload CSV
+            </Button>
 
             <input
               ref={fileInputRef}

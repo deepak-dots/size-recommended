@@ -12,7 +12,7 @@ import {
 import { useState, useEffect } from "react";
 import { useAuthenticatedFetch } from "../hooks/useAuthenticatedFetch";
 
-const SizeDataManagement = () => {
+const ClothSizeDataManagement = () => {
   const fetch = useAuthenticatedFetch();
 
   const [uploading, setUploading] = useState(false);
@@ -88,7 +88,7 @@ const SizeDataManagement = () => {
   return (
     <Page
       fullWidth
-      title="Size Data Management"
+      title="Cloth Size Data Management"
       subtitle="Manage specialized sizing charts for adaptive footwear"
       primaryAction={{
         content: "Upload CSV",
@@ -153,4 +153,4 @@ const SizeDataManagement = () => {
   );
 };
 
-export default SizeDataManagement;
+export default ClothSizeDataManagement;

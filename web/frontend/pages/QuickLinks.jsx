@@ -5,8 +5,11 @@ export default function QuickLinks() {
   return (
     <Stack vertical spacing="tight">
       <Text variant="headingSm">Quick Links</Text>
-      <Button plain url="/SizeDataManagement">
-        Size Data Management
+      <Button plain url="/ShoeSizeDataManagement">
+        Shoe Size Data Management
+      </Button>
+      <Button plain url="/ClothSizeDataManagement">
+        Cloth Size Data Management
       </Button>
       <Button plain url="/UserAnalytics">
         User Analytics
@@ -16,9 +19,6 @@ export default function QuickLinks() {
       </Button>
       <Button plain url="/HelpCenter">
         Help Center
-      </Button>
-      <Button plain url="/FinderMySize">
-        New Finder Size
       </Button>
     </Stack>
   );

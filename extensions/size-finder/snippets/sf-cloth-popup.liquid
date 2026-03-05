@@ -1,0 +1,162 @@
+<div class="cloth-size-finder">
+
+    <!-- ================= STEP 1 ================= -->
+    <div class="cloth-step-1">
+        <div class="padd-20 sf-step-inner">
+
+            <div class="brand-size-box">
+                <label>
+                    Brand
+                    <select class="cloth-brand"></select>
+                </label>
+
+                <label style="margin-top:15px;">
+                     Product Type
+                    <select class="cloth-category">
+                        <option value="">Select Product Type</option>
+                    </select>
+                </label>
+
+                <label style="margin-top:15px;">
+                    Category
+                    <select class="cloth-product-type">
+                        <option value="">Select Category</option>
+                    </select>
+                </label>
+
+                <label style="margin-top:15px;" class="style-full-width">
+                    Style
+                    <select class="cloth-style">
+                         <option value="">Select Style d</option>
+                    </select>
+                </label>
+            </div>
+
+            <!-- Error -->
+            <div class="cloth-error"></div>
+
+            <div class="center-box">
+                <button class="cloth-next sf-primary-btn popupBtn next-first-hide-product-cate">
+                    Next Step →
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ================= STEP 2 ================= -->
+    <div class="cloth-step-2" style="display:none;">
+        <div class="product-detail-col">
+
+            <!-- LEFT SIDE -->
+            <div class="product-col-left">
+                <div class="musturement-guide">
+                    <h2>Measurement Guide</h2>
+                    <p class="subtitle">
+                        Enter your body measurements as instructed.
+                    </p>
+
+                    <div class="card">
+                        <div class="foot-area">
+                            <img id="brand-measurement-image"
+                                src="{{'kesvir.jpg' | asset_url }}"
+                                width="384"
+                                height="467"
+                                alt="clothes" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT SIDE -->
+            <div class="product-col-right">
+                <div class="title-box">
+                    <div class="step-label">STEP 2 OF 3</div>
+                    <h2>Manual Measurement</h2>
+                </div>
+
+                <div class="unit-selector sf-unit-radio" style="margin-bottom:15px;">
+                    <label>
+                        <input type="radio" name="unit" value="cm" checked> <span>CM</span>
+                    </label>
+                    <label style="margin-left:10px;">
+                        <input type="radio" name="unit" value="inch"> <span>INCH</span>
+                    </label>
+                </div>
+
+
+                <!-- Dynamic Measurements -->
+                <div class="cloth-measurements"></div>
+
+                <div class="cloth-measurement-error cloth-error"></div>
+
+                <div class="product-btn-row">
+                    <button class="cloth-back-step-1 sf-secondary-btn popupBackBtn back-first-show-product-cate">
+                        ← Back
+                    </button>
+
+                    <button class="cloth-submit sf-primary-btn popupBtn">
+                        Get My Size →
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ================= STEP 3 ================= -->
+    <div class="cloth-step-3" style="display:none;">
+        <div class="padd-20 sf-step-inner success-box-wrapper">
+            <div class="success-box">
+                <img src="{{ 'check-badge.svg' | asset_url }}" width="70" height="70" alt="clothes" />
+                <div class="cloth-result"></div>
+            </div>
+
+            <div style="margin-top:20px;text-align:center;">
+                <button class="cloth-back-step-2 sf-secondary-btn popupBackBtn"
+                        type="button">
+                    ← Back
+                </button>
+            </div>
+
+            <div class="size-report">
+                <p><strong>Want to keep this for later?</strong></p>
+
+                <p style="font-size:13px; color:#666">
+                    Enter your email to receive a detailed fit report
+                    for your records.
+                </p>
+
+                <div class="size-report-inner">
+                    <input type="email"
+                            class="sf-email"
+                            placeholder="Enter your email address">
+
+                    <button class="sf-send-email sf-secondary-btn popupBtn"
+                            style="width:100%; margin-top:10px">
+                        Send My Size Report
+                    </button>
+                </div>
+            </div>
+
+            <button class="sf-close-apply sf-primary-btn popupBtn back-first-show-product-cate">
+                Close
+            </button>
+
+        </div>
+    </div>
+
+</div>
+
+
+<script>
+window.brandImages = {
+    "kaycey": "{{ 'kaycey.jpg' | asset_url }}",
+    "scratchsleeves": "{{ 'scratchsleeves.png' | asset_url }}",
+    "seenin": "{{ 'seenin.jpg' | asset_url }}",
+    "kesvir": "{{ 'kesvir.jpg' | asset_url }}",
+    "smartknit": "{{ 'smartknit.png' | asset_url }}",
+};
+</script>
