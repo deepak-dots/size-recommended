@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!styleSelect.value) {
-        errorBox.innerText = "Please select a style";
+        errorBox.innerText = "Please select shoe style";
         errorBox.classList.add("show");
         return false;
     }
@@ -123,6 +123,44 @@ document.addEventListener("DOMContentLoaded", () => {
         step3.style.display = "none";
         step2.style.display = "block";
         step = 2;
+    });
+
+
+    // Start Again
+    document.addEventListener("click", function (e) {
+
+        const backStep1Btn = e.target.closest(".sf-back-step-1");
+        const backStep2Btn = e.target.closest(".sf-back-step-2");
+
+        // START AGAIN
+        if (backStep1Btn) {
+            e.preventDefault();
+
+            step3.style.display = "none";
+            step2.style.display = "none";
+            step1.style.display = "block";
+            step = 1;
+
+            if (emailInput) emailInput.value = "";
+
+            setDefaultSelections();
+
+            // SHOW CATEGORY SECTION AGAIN
+            const categoryWrapper = document.querySelector(".sf-category-btn-wraper");
+            if (categoryWrapper) categoryWrapper.style.display = "block";
+        }
+
+        // REVIEW MEASUREMENTS
+        if (backStep2Btn) {
+            e.preventDefault();
+
+            step3.style.display = "none";
+            step2.style.display = "block";
+            step = 2;
+
+            if (emailInput) emailInput.value = "";
+        }
+
     });
 
     // ================= DEFAULT SELECTION FUNCTION =================
@@ -504,12 +542,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 //  Above Maximum Size Case
                 if (data.message?.toLowerCase().includes("above the maximum")) {
 
+                    // resultBox.innerHTML = `
+                    //     <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
+                    //         <h3>${data.message}</h3>
+                    //         <p style="margin-top:10px;">
+                    //             Please enable the insert removal option and try again, please click on back button for this action.
+                    //         </p>
+                    //     </div>
+                    // `;
+
                     resultBox.innerHTML = `
-                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
-                            <h3>${data.message}</h3>
-                            <p style="margin-top:10px;">
-                                Please enable the insert removal option and try again, please click on back button for this action.
-                            </p>
+                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
+                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                            <p style="margin-bottom:10px;">
+                                Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:</p>
+                            <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
+                                <li>A number was mistyped</li>
+                                <li>Measurements were taken in different units</li>
+                                <li>A brace setting doesn’t match the measurements</li>
+                            </ul>
+                            <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
+                            <div style="margin-bottom:25px;">
+                                <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
+                                    Review My Measurements
+                                </button>
+                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
+                                    Start Again
+                                </button>
+                            </div>
+                            <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
+                                <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
+                                <p style="margin:5px 0;">Our team specialises in adaptive fitting.</p>
+                                <p style="margin:5px 0;">
+                                    📧 <a href="mailto:help@specialkids.company" style="color:#c2410c;text-decoration:none;">help@specialkids.company</a><br>
+                                    📞 +44 (0) 121 354 654
+                                </p>
+                            </div>
                         </div>
                     `;
 
@@ -523,9 +591,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
                             <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
                             <p style="margin-bottom:10px;">
-                                Based on the measurements entered, we can’t confidently recommend a size.
+                                Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:
                             </p>
-                            <p style="margin-bottom:10px;">This usually happens if:</p>
                             <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
                                 <li>A number was mistyped</li>
                                 <li>Measurements were taken in different units</li>
@@ -555,13 +622,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 //  Any Other Success Message
                 else {
-                    resultBox.innerHTML = `
-                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
-                        <h3>We couldn’t confidently match a size yet.</h3>
-                        <p style="margin-top:10px;">Based on the measurements entered, we can’t confidently recommend a size.</p>
-                        <p>Email: <a href="mailto:help@specialkids.company">help@specialkids.company</a></p>
-                        <p>Telephone:<br>+44 (0) 121 354 6543 (UK)<br>+44 (0) 792 7200 762 (UK)</p>
-                    </div>
+                       resultBox.innerHTML = `
+                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
+                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                            <p style="margin-bottom:10px;">
+                                Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:</p>
+                            <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
+                                <li>A number was mistyped</li>
+                                <li>Measurements were taken in different units</li>
+                                <li>A brace setting doesn’t match the measurements</li>
+                            </ul>
+                            <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
+                            <div style="margin-bottom:25px;">
+                                <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
+                                    Review My Measurements
+                                </button>
+                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
+                                    Start Again
+                                </button>
+                            </div>
+                            <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
+                                <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
+                                <p style="margin:5px 0;">Our team specialises in adaptive fitting.</p>
+                                <p style="margin:5px 0;">
+                                    📧 <a href="mailto:help@specialkids.company" style="color:#c2410c;text-decoration:none;">help@specialkids.company</a><br>
+                                    📞 +44 (0) 121 354 654
+                                </p>
+                            </div>
+                        </div>
                     `;
                     if (sizeReportBox) sizeReportBox.style.display = "none";
                 }
@@ -569,24 +657,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
             /* ================= REAL ERROR ================= */
             else {
-                resultBox.innerHTML = `
-                    <div style="background:#fff7ed;border:1px solid #f59e0b;padding:20px;border-radius:12px;margin:20px 0;text-align:center;">
-                        <h3>It looks like the sizes may not have been entered correctly.</h3>
-                        <p style="margin-top:10px;">Please contact our support team for assistance:</p>
-                        <p>Email: <a href="mailto:help@specialkids.company">help@specialkids.company</a></p>
-                        <p>Telephone:<br>+44 (0) 121 354 6543 (UK)<br>+44 (0) 792 7200 762 (UK)</p>
-                    </div>
-                `;
+               resultBox.innerHTML = `
+                        <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
+                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                            <p style="margin-bottom:10px;">
+                                Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:
+                            </p>
+                            <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
+                                <li>A number was mistyped</li>
+                                <li>Measurements were taken in different units</li>
+                                <li>A brace setting doesn’t match the measurements</li>
+                            </ul>
+                            <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
+                            <div style="margin-bottom:25px;">
+                                <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
+                                    Review My Measurements
+                                </button>
+                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
+                                    Start Again
+                                </button>
+                            </div>
+                            <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
+                                <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
+                                <p style="margin:5px 0;">Our team specialises in adaptive fitting.</p>
+                                <p style="margin:5px 0;">
+                                    📧 <a href="mailto:help@specialkids.company" style="color:#c2410c;text-decoration:none;">help@specialkids.company</a><br>
+                                    📞 +44 (0) 121 354 654
+                                </p>
+                            </div>
+                        </div>
+                    `;
                 if (sizeReportBox) sizeReportBox.style.display = "none";
             }
         } catch(err){
             resultBox.innerHTML=`
-                <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;>
+                <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
                     <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
                     <p style="margin-bottom:10px;">
-                        Based on the measurements entered, we can’t confidently recommend a size.
-                    </p>
-                    <p style="margin-bottom:10px;">This usually happens if:</p>
+                        Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:</p>
                     <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
                         <li>A number was mistyped</li>
                         <li>Measurements were taken in different units</li>

@@ -157,13 +157,6 @@ body.sf-modal-open {
     left: 20px;
 }
 
-
-
-
-.product-size-finder-popup .title-box {
-    margin-bottom: 30px;
-}
-
 .product-size-finder-popup .sf-modal-content {
     padding: 0px;
 
@@ -507,7 +500,7 @@ body.sf-modal-open {
     border-radius: 8px;
     font-size: 11px;
     color: #4b5563;
-    width: calc(50% - 5px);
+    /* width: calc(50% - 5px); */
 }
 
 .product-btn-row {

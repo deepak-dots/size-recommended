@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // ================= SEND SIZE REPORT =================
 
-const BASE_URL = "http://127.0.0.1:65011/api/proxy";
+const BASE_URL = "http://127.0.0.1:53951/api/proxy";
 
 document.addEventListener("click", async function (e) {
 
