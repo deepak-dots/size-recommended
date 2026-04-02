@@ -52,9 +52,9 @@
             <!-- LEFT SIDE -->
             <div class="product-col-left">
                 <div class="musturement-guide">
-                    <h2>Measurement Guide</h2>
+                    <h2>Reference Diagram</h2>
                     <p class="subtitle">
-                        Enter your body measurements as instructed.
+                        <strong>Where to Measure</strong>, Match your measurements to the diagram.
                     </p>
 
                     <div class="card">
@@ -66,6 +66,22 @@
                                 alt="clothes" />
                         </div>
                     </div>
+
+                    <div class="labels cloth-measurement-labels">
+                        <div class="label-item">A: </div>
+                        <div class="label-item">B:</div>
+                        <div class="label-item">C: </div>
+                        <div class="label-item">D: </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-icon">i</div>
+                        <div class="info-text">
+                            <strong>String Method Guide:</strong>
+                        No measuring tape? Wrap string around the area, mark where it meets, then measure the string against a ruler.
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -73,21 +89,36 @@
             <div class="product-col-right">
                 <div class="title-box">
                     <div class="step-label">STEP 2 OF 3</div>
-                    <h2>Manual Measurement</h2>
+                    <h2 style="text-align: left;">Measure your Body</h2>
+                    <p style="text-align: left; color:#006c75;">Follow the guide below to get the most accurate fit.</p>
                 </div>
 
-                <div class="unit-selector sf-unit-radio" style="margin-bottom:15px;">
-                    <label>
-                        <input type="radio" name="unit" value="cm" checked> <span>CM</span>
+                <div class="sf-unit-wrapper">
+                    <label class="sf-brace-title">
+                        Choose your unit of measurement
                     </label>
-                    <label style="margin-left:10px;">
-                        <input type="radio" name="unit" value="inch"> <span>INCH</span>
-                    </label>
-                </div>
 
+                    <div class="unit-selector sf-unit-radio" style="margin-bottom:15px;">
+                        <label>
+                            <input type="radio" name="unit" value="cm" checked> <span>CM</span>
+                        </label>
+                        <label style="margin-left:10px;">
+                            <input type="radio" name="unit" value="inch"> <span>INCH</span>
+                        </label>
+                    </div>
+                </div>
 
                 <!-- Dynamic Measurements -->
+                <div class="title-box">
+                    <p style="text-align: left; color:#006c75;">Enter measurements to 1 decimal place (e.g. 23.4).</p>
+                </div>
                 <div class="cloth-measurements"></div>
+
+                <div class="sf-status-wrapper" style="margin-bottom:20px;">
+                    <p>Designed for adaptive fit</p>
+                    <p>Accounts for braces and width</p>
+                    <p>Personalised to your measurements</p>
+                </div>
 
                 <div class="cloth-measurement-error cloth-error"></div>
 
@@ -97,7 +128,7 @@
                     </button>
 
                     <button class="cloth-submit sf-primary-btn popupBtn">
-                        Get My Size →
+                        Find My Best Fit  →
                     </button>
                 </div>
             </div>
@@ -122,13 +153,10 @@
             </div>
 
             <div class="size-report">
-                <p><strong>Want to keep this for later?</strong></p>
-
+                 <p><strong>Save your measurements and discover more styles</strong></p>
                 <p style="font-size:13px; color:#666">
-                    Enter your email to receive a detailed fit report
-                    for your records.
+                    Discover all the styles available in your size, enter your email to unlock your personalised results. 
                 </p>
-
                 <div class="size-report-inner">
                     <input type="email"
                             class="sf-email"

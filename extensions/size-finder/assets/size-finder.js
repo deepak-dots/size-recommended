@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let brandId = "", shoeType = "", styleId = "";
     let category = "Shoes", unit = "cm", insertRemoval = false, width = "", foot = "both";
     let measurementKeys = [], measurements = { left: {}, right: {} };
-    let step = 1, braceOption = "No Brace";
+    let step = 1, braceOption = "No splint";
 
     const removalCheckbox = document.querySelector(".sf-removal");
     const backStep1 = document.querySelector(".sf-back-step-1");
@@ -166,11 +166,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // ================= DEFAULT SELECTION FUNCTION =================
     function setDefaultSelections() {
         unit = "cm";
-        braceOption = "No Brace";
+        braceOption = "No splint";
         insertRemoval = false;
 
         const cmRadio = document.querySelector('input[name="sf-unit"][value="cm"]');
-        const braceRadio = document.querySelector('input[name="sf-brace"][value="No Brace"]');
+        const braceRadio = document.querySelector('input[name="sf-brace"][value="No splint"]');
 
         if (cmRadio) {
             cmRadio.checked = true;
@@ -222,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
         insertRemoval = false;
         width = "";
         foot = "both";
-        braceOption = "No Brace";
+        braceOption = "No splint";
         unit = "cm";
 
         // Reset checkboxes
@@ -234,7 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         document.querySelectorAll('input[name="sf-brace"]').forEach(radio => {
-            radio.checked = radio.value === "No Brace";
+            radio.checked = radio.value === "No splint";
         });
 
         if (sizeReportBox) sizeReportBox.style.display = "none";
@@ -374,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         ["left", "right"].forEach(side => {
             const title = document.createElement("h4");
-            title.innerHTML = `<span>${side.toUpperCase()} FOOT</span>`;
+            title.innerHTML = `<strong class="left-right-foot">${side.toUpperCase()} FOOT</strong>`;
             measurementBox.appendChild(title);
 
             const rowDiv = document.createElement("div");
@@ -388,10 +388,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 wrapper.className = "sf-measure-input-wrapper";
 
                 const label = document.createElement("label");
-                if (isBilly) label.innerText = ["A","D","E"][index] || m;
-                else label.innerText = ["A","D"][index] || m;
 
-                label.htmlFor = `${side}-${m}`;
+                if (isBilly) {
+                label.innerText = (["A","D","E"][index] || m);
+                } else {
+                label.innerText = (["A","D"][index] || m);
+                }
+
+                // keep htmlFor clean & safe
+                label.htmlFor = `${side}-${m.toString().replace('.', '-')}`;
 
                 const input = document.createElement("input");
                 input.type = "number";
@@ -477,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const isBetween = result.is_between;
 
                 const selectedBrandName = recommended?.shoe_brand?.name?.toLowerCase() || "";
-                const isBilly = selectedBrandName.includes("billy");
+                const isBilly = selectedBrandName.includes("billy"); 
 
                 resultBox.innerHTML = `
                     <h2 style="text-align: center;">MEASUREMENT COMPLETE</h2>
@@ -485,8 +490,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         <div class="summery-size-box">
                             <p>Category: ${recommended?.shoe_gender?.name || ""}</p>
                             <p>Brand: ${recommended?.shoe_brand?.name || ""}</p>
-                            <p>Style: ${recommended?.shoe_style?.name || ""}</p>
                             <p>Brace Option: ${braceOption || ""}</p>
+                            <p class="email-style">Style: ${recommended?.shoe_style?.name || ""}</p>
                         </div>
 
                         <div class="recommended-size-box" 
@@ -553,7 +558,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     resultBox.innerHTML = `
                         <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
-                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                            <h3 style="margin-bottom:10px;">we could not confidently match your size</h3>
                             <p style="margin-bottom:10px;">
                                 Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:</p>
                             <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
@@ -566,9 +571,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
                                     Review My Measurements
                                 </button>
-                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
-                                    Start Again
-                                </button>
+                               
                             </div>
                             <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
                                 <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
@@ -589,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     resultBox.innerHTML = `
                         <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
-                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                             <h3 style="margin-bottom:10px;">we could not confidently match your size</h3>
                             <p style="margin-bottom:10px;">
                                 Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:
                             </p>
@@ -603,9 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
                                     Review My Measurements
                                 </button>
-                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
-                                    Start Again
-                                </button>
+                               
                             </div>
                             <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
                                 <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
@@ -624,7 +625,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else {
                        resultBox.innerHTML = `
                         <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
-                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                             <h3 style="margin-bottom:10px;">we could not confidently match your size</h3>
                             <p style="margin-bottom:10px;">
                                 Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:</p>
                             <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
@@ -637,9 +638,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
                                     Review My Measurements
                                 </button>
-                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
-                                    Start Again
-                                </button>
+                                
                             </div>
                             <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
                                 <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
@@ -659,7 +658,7 @@ document.addEventListener("DOMContentLoaded", () => {
             else {
                resultBox.innerHTML = `
                         <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
-                            <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                             <h3 style="margin-bottom:10px;">we could not confidently match your size</h3>
                             <p style="margin-bottom:10px;">
                                 Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:
                             </p>
@@ -673,9 +672,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
                                     Review My Measurements
                                 </button>
-                                <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
-                                    Start Again
-                                </button>
+                               
                             </div>
                             <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
                                 <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>
@@ -692,7 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch(err){
             resultBox.innerHTML=`
                 <div style="background:#fff7ed;border:1px solid #f59e0b;padding:24px;border-radius:12px;margin:20px 0;text-align:center;">
-                    <h3 style="margin-bottom:10px;">We couldn’t confidently match a size yet.</h3>
+                     <h3 style="margin-bottom:10px;">we could not confidently match your size</h3>
                     <p style="margin-bottom:10px;">
                         Based on the measurements entered, we can’t confidently recommend a size. This usually happens if:</p>
                     <ul style="list-style:disc;text-align:left;display:inline-block;margin:0 0 20px 0;padding-left:20px;">
@@ -705,9 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <button class="sf-back-step-2 sf-secondary-btn popupBackBtn">
                             Review My Measurements
                         </button>
-                        <button class="sf-back-step-1 sf-secondary-btn popupBackBtn" >
-                            Start Again
-                        </button>
+                       
                     </div>
                     <div style="border-top:1px solid #fed7aa;padding-top:15px;text-align:center;">
                         <p style="font-weight:bold;margin-bottom:8px;">Need personal help?</p>

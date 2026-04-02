@@ -993,3 +993,11 @@ button {
 body.template-product.app-modal-open {
     overflow: hidden;
 }
+
+
+.product-col-right .sf-status-wrapper p {
+    line-height: 4px;
+}
+
+.sf-measurements .left-right-foot{ color: #006c75;}
+.summery-size-box .email-style{ display: none;}
