@@ -28,6 +28,36 @@ class ShoesSizeController extends ApiController
         return $this->successResponse($sizes, 'Shoe sizes retrieved successfully', 200);
     }
 
+    private function getStyleGroup($styleName)
+    {
+        $styleName = strtolower($styleName);
+
+        if (str_contains($styleName, 'goat')) {
+            return 'GOAT';
+        }
+
+        if (str_contains($styleName, 'classic') || str_contains($styleName, 'cs')) {
+            return 'CLASSIC';
+        }
+
+        if (str_contains($styleName, 'sensory')) {
+            return 'SENSORY';
+        }
+
+        return 'OTHER';
+    }
+
+
+    private function getWidthType($measurementType)
+    {
+        $code = strtolower($measurementType->code ?? '');
+
+        if (str_contains($code, 'd')) return 'D';
+        if (str_contains($code, 'e')) return 'E';
+
+        return null;
+    }
+
     // Find size based on user input
     public function findSize(Request $request)
     {
@@ -41,7 +71,9 @@ class ShoesSizeController extends ApiController
             'measurements.right.*' => 'required|numeric',
             'unit' => 'nullable|string|in:cm,inches',
             'insertRemoval' => 'nullable|boolean',
-            'styleId' => 'nullable|integer|exists:shoe_styles,id'
+            'styleId' => 'nullable|integer|exists:shoe_styles,id',
+            'style' => 'nullable|string',
+            'width_group' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -168,9 +200,11 @@ class ShoesSizeController extends ApiController
 
 
         $removal_message = false;
+        $nearMatch = false; 
 
 
         foreach ($footLength as $measurementId => $length) {
+
             // Slightly big check when insertRemoval is FALSE
             if (!$insertRemoval && $maxSizeValue) {
 
@@ -178,80 +212,153 @@ class ShoesSizeController extends ApiController
 
                 if ($unit === 'cm') {
 
-                    // Check approx 1.4 cm bigger (allow small tolerance)
-                    if ($difference > 0 && $difference <= 1.4) {
-
-                        return $this->successResponse(
-                            null,
-                            'Your measurement is slightly above the maximum size. You may consider enabling insert removal for better fitting.',
-                            200
-                        );
+                    // OLD LOGIC (UNCHANGED)
+                    if ($difference > 0 && $difference <= 0.4) {
+                        // return $this->successResponse(
+                        //     null,
+                        //     'Your measurement is slightly above the maximum size. You may consider enabling insert removal for better fitting.',
+                        //     200
+                        // );
+                        $removal_message = "Your measurement is slightly above the maximum size. You may consider enabling insert removal for better fitting.";
                     }
                 } else { // inches
 
-                    // 1.4 cm ≈ 0.55 inches
-                    if ($difference > 0 && $difference <= 0.55) {
-
-                        return $this->successResponse(
-                            null,
-                            'Your measurement is slightly above the maximum size. You may consider enabling insert removal for better fitting.',
-                            200
-                        );
+                    // OLD LOGIC (UNCHANGED)
+                    if ($difference > 0 && $difference <= 0.5) {
+                        // return $this->successResponse(
+                        //     null,
+                        //     'Your measurement is slightly above the maximum size. You may consider enabling insert removal for better fitting.',
+                        //     200
+                        // );
+                        $removal_message = "Your measurement is slightly above the maximum size. You may consider enabling insert removal for better fitting.";
                     }
                 }
             }
+
+            // -------------------------------
+            // EFFECTIVE LENGTH CALCULATION
+            // -------------------------------
 
             $effectiveLength = $length - $insertBuffer;
 
             if ($insertRemoval) {
 
                 if ($length == $lastLeftValue) {
-                    //$effectiveLength = $length - $insertBuffer;
-
                     $effectiveLength = $length - $insertBuffer;
-
-                    $difference = $length - $maxSizeValue;
                 } else if ($length == $lastRightValue) {
-                    //$effectiveLength = $length - $insertBuffer;
-
                     $effectiveLength = $length - $insertBuffer;
-
-                    $difference = $length - $maxSizeValue;
                 } else {
                     $effectiveLength = $length;
                 }
+
             } else {
                 $effectiveLength = $length;
+            }
+
+
+            // -------------------------------
+            //  NEW FIX: STORE NEAR MATCH FLAG (IMPORTANT)
+            // -------------------------------
+
+            $tolerance = ($unit === 'cm') ? 0.3 : 0.05;
+
+            // NEW: Track near matches (D/E both)
+            if (!isset($nearMatch)) {
+                $nearMatch = false;
             }
 
 
             $query = clone $sizeQuery;
 
             $query->where('shoe_measurement_types_id', $measurementId)
-                ->where(function ($q) use ($effectiveLength, $unit) {
+                ->where(function ($q) use ($effectiveLength, $unit, $measurementId, &$nearMatch, $tolerance) {
 
                     if ($unit === 'cm') {
 
-                        $tolerance = 0.3;
-
+                        // EXISTING MATCH LOGIC (UNCHANGED)
                         $q->where('min_cm_size', '<=', $effectiveLength + $tolerance)
-                            ->where('max_cm_size', '>=', $effectiveLength - $tolerance);
+                        ->where('max_cm_size', '>=', $effectiveLength - $tolerance);
+
+                        // -------------------------------
+                        //  NEW: CHECK NEAR MISS (IMPORTANT)
+                        // -------------------------------
+                        // $q->orWhere(function ($sub) use ($effectiveLength, &$nearMatch, $tolerance) {
+                        //     $sub->where(function ($inner) use ($effectiveLength, &$nearMatch, $tolerance) {
+
+                        //         // If slightly above max (within tolerance)
+                        //         $inner->whereRaw('? > max_cm_size AND (? - max_cm_size) <= ?', [
+                        //             $effectiveLength,
+                        //             $effectiveLength,
+                        //             $tolerance
+                        //         ]);
+
+                        //         // mark near match
+                        //         $nearMatch = true;
+                        //     });
+                        // });
+
                     } else {
 
-                        $tolerance = 0.05;
-
+                        // EXISTING MATCH LOGIC (UNCHANGED)
                         $q->where('min_in_size', '<=', $effectiveLength + $tolerance)
-                            ->where('max_in_size', '>=', $effectiveLength - $tolerance);
+                        ->where('max_in_size', '>=', $effectiveLength - $tolerance);
+
+                        // NEW: same logic for inches
+                        // $q->orWhere(function ($sub) use ($effectiveLength, &$nearMatch, $tolerance) {
+                        //     $sub->whereRaw('? > max_in_size AND (? - max_in_size) <= ?', [
+                        //         $effectiveLength,
+                        //         $effectiveLength,
+                        //         $tolerance
+                        //     ]);
+
+                        //     $nearMatch = true;
+                        // });
                     }
                 });
 
-            $ukSizesForMeasurement = $query->pluck('uk_size')->toArray();
+            $results = $query->get();
+
+            $ukSizesForMeasurement = $results->pluck('uk_size')->toArray();
+
+            //  FIX: Near match detection (correct place)
+            if ($results->isEmpty()) {
+
+                $nearCheck = clone $sizeQuery;
+
+                if ($unit === 'cm') {
+                    $nearCheck->where('shoe_measurement_types_id', $measurementId)
+                        ->where('max_cm_size', '<', $effectiveLength)
+                        ->whereRaw('? - max_cm_size <= ?', [$effectiveLength, $tolerance]);
+                } else {
+                    $nearCheck->where('shoe_measurement_types_id', $measurementId)
+                        ->where('max_in_size', '<', $effectiveLength)
+                        ->whereRaw('? - max_in_size <= ?', [$effectiveLength, $tolerance]);
+                }
+
+                if ($nearCheck->exists()) {
+                    $nearMatch = true;
+                }
+            }
+
+           
 
             $candidateUkSizes[] = $ukSizesForMeasurement;
         }
 
         // Find common UK sizes across all measurements
         $commonUkSizes = call_user_func_array('array_intersect', $candidateUkSizes);
+
+        $commonUkSizes = array_values(array_unique($commonUkSizes));
+        sort($commonUkSizes);
+
+        //  ADD THIS BLOCK HERE (IMPORTANT)
+        if (empty($commonUkSizes) && !empty($nearMatch)) {
+            return $this->successResponse(
+                null,
+                "⚠ Your foot is slightly wider (within tolerance). Try GOAT or SENSORY for better fit.",
+                200
+            );
+        }
 
 
         $commonUkSizes = array_values(array_unique($commonUkSizes));
@@ -271,19 +378,153 @@ class ShoesSizeController extends ApiController
                 })
                 ->first();
 
+            $style = $finalSize->shoeStyle;
+            $styleGroup = $this->getStyleGroup($style->name);
+            $widthGroup = strtolower($style->width_group);
+
+            $fitMessage = null;
+
+            // D/E values 
+            $dValue = null;
+            $eValue = null;
+
+            foreach ($brandMeasurements as $measurement) {
+
+                $type = $this->getWidthType($measurement);
+
+                if ($type === 'D') {
+                    $dValue = $footLength[$measurement->id] ?? null;
+                }
+
+                if ($type === 'E') {
+                    $eValue = $footLength[$measurement->id] ?? null;
+                }
+            }
+
+
+            //  Apply only for Kids & Toddlers
+            $allowedGroups = ['kids', 'toddler', 'kids & toddler', 'mens', 'womens'];
+            $currentGroup = strtolower($gender->internal_group);
+
+            if (in_array($currentGroup, $allowedGroups)) {
+
+                // Get width range for current size (D/E)
+                $currentSizeData = ShoeSize::where('shoe_genders_id', $gender->id)
+                    ->where('shoe_brands_id', $brandId)
+                    ->where('uk_size', $recommendedUkSize)
+                    ->when($styleId, function ($q) use ($styleId) {
+                        $q->where('shoe_styles_id', $styleId);
+                    })
+                    ->get();
+
+                $dMin = $dMax = $eMin = $eMax = null;
+
+                foreach ($currentSizeData as $row) {
+                    $type = $this->getWidthType($row->shoeMeasurementType);
+
+                    if ($type === 'D') {
+                        $dMin = isset($dMin) ? min($dMin, $row->min_cm_size) : $row->min_cm_size;
+                        $dMax = isset($dMax) ? max($dMax, $row->max_cm_size) : $row->max_cm_size;
+                    }
+
+                    if ($type === 'E') {
+                        $eMin = isset($eMin) ? min($eMin, $row->min_cm_size) : $row->min_cm_size;
+                        $eMax = isset($eMax) ? max($eMax, $row->max_cm_size) : $row->max_cm_size;
+                    }
+                }
+
+                // GOAT → narrow check
+                // GOAT → narrow check (WITH 0.3 tolerance)
+                if (str_contains(strtolower($styleGroup), 'goat')) {
+
+                    $tolerance = 0.3;
+                    $isNarrow = false;
+
+                    // D check
+                    if (
+                        $dValue !== null && $dMin !== null &&
+                        $dValue < $dMin &&
+                        ($dMin - $dValue) <= $tolerance
+                    ) {
+                        $isNarrow = true;
+                    }
+
+                    //  ADD THIS (E check missing earlier)
+                    if (
+                        $eValue !== null && $eMin !== null &&
+                        $eValue < $eMin &&
+                        ($eMin - $eValue) <= $tolerance
+                    ) {
+                        $isNarrow = true;
+                    }
+
+                    if ($isNarrow) {
+                        $fitMessage = "⚠ Your foot is slightly narrower. Try CLASSIC or SENSORY for better fit (medium width available).";
+                    }
+                }
+
+
+                // CLASSIC → wide check (D + E both)
+                // CLASSIC → wide check (WITH 0.3 tolerance)
+                if (str_contains(strtolower($styleGroup), 'classic')) {
+
+                    //   NEW: E slightly above range (like removal message)
+                    if (
+                        $eValue !== null && $eMax !== null &&
+                        $eValue > $eMax &&
+                        ($eValue - $eMax) <= 0.3
+                    ) {
+                        $fitMessage = "⚠ Your foot width is slightly above the supported range. Try GOAT or SENSORY for better fit.";
+                    }
+
+                    $isWide = false;
+
+                    // tolerance
+                    $tolerance = 0.3;
+
+                    // D check (only upto +0.3)
+                    if (
+                        $dValue !== null && $dMax !== null &&
+                        $dValue > $dMax &&
+                        ($dValue - $dMax) <= $tolerance
+                    ) {
+                        $isWide = true;
+                    }
+
+                    // E check (only upto +0.3)  FIX
+                    if (
+                        $eValue !== null && $eMax !== null &&
+                        $eValue > $eMax &&
+                        ($eValue - $eMax) <= $tolerance
+                    ) {
+                        $isWide = true;
+                    }
+
+                    if ($isWide) {
+                        $fitMessage = "⚠ Your foot is slightly wider. Try GOAT or SENSORY for better fit (extra-wide options available).";
+                    }
+                }
+
+            }    
+
             return $this->successResponse([
                 'recommended_size' => $finalSize,
                 'all_sizes' => $commonUkSizes,
                 'min_size' => min($commonUkSizes),
                 'max_size' => max($commonUkSizes),
+                'fit_message' => $fitMessage, //  NEW
                 'removal_message' => $removal_message,
                 'is_between' => count($commonUkSizes) > 1
             ], 'Shoe size found successfully', 200);
         }
 
+       if (!empty($removal_message)) {
+            return $this->successResponse(null, $removal_message, 200);
+        }
+
         return $this->successResponse(
             null,
-            'Multiple shoe sizes found. Consider trying sizes: ' . implode(', ', $commonUkSizes),
+            'We could not confidently match your size. Please review your measurements.',
             200
         );
     }
@@ -337,7 +578,7 @@ class ShoesSizeController extends ApiController
 
             /*
             |--------------------------------------------------------------------------
-            | 🔥 Dynamic File Name (Brand + Gender)
+            |  Dynamic File Name (Brand + Gender)
             |--------------------------------------------------------------------------
             */
 

@@ -286,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
     brandId = brandSelect.value;
 
     // resetShoes dependent dropdowns
-    genderSelect.innerHTML = `<option value="">Select Shoe Type</option>`;
+    genderSelect.innerHTML = `<option value="">Select Shoe Category</option>`;
     styleSelect.innerHTML = `<option value="">Select Style</option>`;
     shoeType = "";
     styleId = "";
@@ -300,7 +300,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const res = await fetch(`${BASE_URL}/v1/shoe-genders/${brandId}`);
     const json = await res.json();
 
-    genderSelect.innerHTML = `<option value="">Select Shoe Type</option>`;
+    genderSelect.innerHTML = `<option value="">Select Shoe Category</option>`;
     json.data.forEach(g =>
         genderSelect.innerHTML += `<option value="${g.id}">${g.name}</option>`
     );
@@ -443,7 +443,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resultBox.innerHTML = "";
 
         if (!brandId) { errorBox.innerText="Please select a brand."; return; }
-        if (category==="Shoes" && !shoeType) { errorBox.innerText="Please select shoe type."; return; }
+        if (category==="Shoes" && !shoeType) { errorBox.innerText="Please select shoe category."; return; }
 
         // Validate all inputs
         let isValid=true;
@@ -476,6 +476,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const result = data.data;
                 const recommended = result.recommended_size;
+                const fitMessage = result.fit_message || "";
                 const allSizes = result.all_sizes || [];
                 const minSize = result.min_size;
                 const maxSize = result.max_size;
@@ -518,6 +519,12 @@ document.addEventListener("DOMContentLoaded", () => {
                                     UK: ${recommended?.uk_size ?? "-"}
                                 </h4>
                             `}
+
+                             ${fitMessage ? `
+                                <p style="margin-top:10px;font-weight:600;color:#333;">
+                                    Fit: ${fitMessage}
+                                </p>
+                            ` : ""}
 
                             ${
                                 isBetween && allSizes.length > 1
