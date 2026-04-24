@@ -70,13 +70,14 @@ class ImportShoeRowJob implements ShouldQueue
                     'updated_at' => now(),
                 ]
             ]);
-            $style = ShoeStyle::whereRaw('LOWER(name) = LOWER(?)', [$rowData['style']])->where('shoe_brands_id', $brand->id)->where('shoe_genders_id', $gender->id)->whereRaw('LOWER(width_group) = LOWER(?)', [$rowData['width_group']])->first();
+                //dd($rowData);
+            $style = ShoeStyle::whereRaw('LOWER(name) = LOWER(?)', [$rowData['style']])->where('shoe_brands_id', $brand->id)->where('shoe_genders_id', $gender->id)->first();
             if (!$style) {
                 $style = new ShoeStyle();
                 $style->name = $rowData['style'];
                 $style->shoe_brands_id = $brand->id;
                 $style->shoe_genders_id = $gender->id;
-                $style->width_group = $rowData['width_group'];
+               // $style->width_group = $rowData['width_group'];
                 $style->save();
             }
             $size = ShoeSize::where([
