@@ -85,6 +85,7 @@ class ImportShoeRowJob implements ShouldQueue
                 'shoe_styles_id' => $style->id,
                 'shoe_genders_id' => $gender->id,
                 'shoe_measurement_types_id' => $measurementType->id,
+                'width_group' => $rowData['width_group'] ?? null,
                 'us_size' => $rowData['us_size'],
                 'uk_size' => $rowData['uk_size'],
                 'eu_size' => $rowData['eu_size'],
@@ -99,6 +100,7 @@ class ImportShoeRowJob implements ShouldQueue
                 $size->shoe_styles_id = $style->id;
                 $size->shoe_genders_id = $gender->id;
                 $size->shoe_measurement_types_id = $measurementType->id;
+                $size->width_group = $rowData['width_group'] ?? null;
                 $size->us_size = $rowData['us_size'];
                 $size->uk_size = $rowData['uk_size'];
                 $size->eu_size = $rowData['eu_size'];

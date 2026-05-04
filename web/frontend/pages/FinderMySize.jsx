@@ -239,7 +239,7 @@ const FindMySize = () => {
     setResult(null);
 
     if (!brandId) return setError("Please select a brand.");
-    if (category === "Shoes" && !shoeType) return setError("Please select shoe type.");
+    if (category === "Shoes" && !shoeType) return setError("Please select shoe category.");
 
     const leftA = parseFloat(measurements.left[measurementKeys[0]] || 0);
     const rightA = parseFloat(measurements.right[measurementKeys[0]] || 0);
@@ -386,7 +386,7 @@ const FindMySize = () => {
                       }}
                       style={inputStyle}
                     >
-                      <option value="">Select Shoe Type</option>
+                      <option value="">Select Shoe Category</option>
                       {genders.map((g) => (
                         <option key={g.id} value={g.id}>
                           {g.name}

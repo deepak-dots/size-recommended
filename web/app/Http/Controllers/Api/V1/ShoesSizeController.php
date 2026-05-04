@@ -22,7 +22,7 @@ class ShoesSizeController extends ApiController
 {
     public function index()
     {
-        $sizes = ShoeSize::select('id', 'shoe_genders_id', 'us_size', 'uk_size', 'eu_size')
+        $sizes = ShoeSize::select('id', 'shoe_genders_id', 'us_size', 'uk_size', 'eu_size', 'width_group')
             ->orderBy('id', 'asc')
             ->get();
         return $this->successResponse($sizes, 'Shoe sizes retrieved successfully', 200);
@@ -369,14 +369,51 @@ class ShoesSizeController extends ApiController
 
             $recommendedUkSize = max($commonUkSizes);
 
-            $finalSize = ShoeSize::with('shoeMeasurementType', 'shoeBrand', 'shoeGender', 'shoeStyle')
-                ->where('shoe_genders_id', $gender->id)
-                ->where('shoe_brands_id', $brandId)
-                ->where('uk_size', $recommendedUkSize)
-                ->when($styleId, function ($q) use ($styleId) {
-                    $q->where('shoe_styles_id', $styleId);
-                })
-                ->first();
+            $finalSizes = ShoeSize::with('shoeMeasurementType', 'shoeBrand', 'shoeGender', 'shoeStyle')
+            ->where('shoe_genders_id', $gender->id)
+            ->where('shoe_brands_id', $brandId)
+            ->where('uk_size', $recommendedUkSize)
+            ->when($styleId, function ($q) use ($styleId) {
+                $q->where('shoe_styles_id', $styleId);
+            })
+            ->get();
+
+            $bestMatch = null;
+            $bestScore = PHP_INT_MAX;
+
+            foreach ($finalSizes as $sizeRow) {
+
+                $score = 0;
+
+                foreach ($brandMeasurements as $measurement) {
+
+                    $value = $footLength[$measurement->id] ?? null;
+
+                    if (!$value) continue;
+
+                    if ($unit === 'cm') {
+                        $min = $sizeRow->min_cm_size;
+                        $max = $sizeRow->max_cm_size;
+                    } else {
+                        $min = $sizeRow->min_in_size;
+                        $max = $sizeRow->max_in_size;
+                    }
+
+                    // distance calculate
+                    if ($value < $min) {
+                        $score += ($min - $value);
+                    } elseif ($value > $max) {
+                        $score += ($value - $max);
+                    }
+                }
+
+                if ($score < $bestScore) {
+                    $bestScore = $score;
+                    $bestMatch = $sizeRow;
+                }
+            }
+
+            $finalSize = $bestMatch;
 
             $style = $finalSize->shoeStyle;
             $styleGroup = $this->getStyleGroup($style->name);
@@ -416,7 +453,7 @@ class ShoesSizeController extends ApiController
                         $q->where('shoe_styles_id', $styleId);
                     })
                     ->get();
-
+            
                 $dMin = $dMax = $eMin = $eMax = null;
 
                 foreach ($currentSizeData as $row) {
@@ -467,12 +504,12 @@ class ShoesSizeController extends ApiController
                 // CLASSIC → wide check (D + E both)
                 // CLASSIC → wide check (WITH 0.3 tolerance)
                 if (str_contains(strtolower($styleGroup), 'classic')) {
-
-                    //   NEW: E slightly above range (like removal message)
+                //echo $eValue . ' vs ' . $eMax; // DEBUG
+                   //   NEW: E slightly above range (like removal message)
                     if (
                         $eValue !== null && $eMax !== null &&
                         $eValue > $eMax &&
-                        ($eValue - $eMax) <= 0.3
+                        ($eValue - $eMax) <= 0.4
                     ) {
                         $fitMessage = "⚠ Your foot width is slightly above the supported range. Try GOAT or SENSORY for better fit.";
                     }

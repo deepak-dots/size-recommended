@@ -504,8 +504,10 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <h4 style="text-align: center;">
                                     UK: ${recommended?.uk_size ?? "-"} 
                                     ${
-                                        recommended?.shoe_style?.width_group 
-                                        ? `(${recommended.shoe_style.width_group})` 
+                                    recommended?.width_group || recommended?.shoe_style?.name
+                                        ? `( ${recommended?.width_group || ""}${
+                                            recommended?.width_group && recommended?.shoe_style?.name ? " in " : ""
+                                        }${recommended?.shoe_style?.name || ""} )`
                                         : ""
                                     }
                                 </h4>
@@ -522,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                              ${fitMessage ? `
                                 <p style="margin-top:10px;font-weight:600;color:#333;">
-                                    Fit: ${fitMessage}
+                                    Fit: ${fitMessage} 
                                 </p>
                             ` : ""}
 
@@ -534,8 +536,8 @@ document.addEventListener("DOMContentLoaded", () => {
                                     We recommend Size 
                                     <strong> 
                                         UK ${recommended?.uk_size ?? "-"} 
-                                        ${recommended?.shoe_style?.width_group 
-                                            ? `(${recommended.shoe_style.width_group})` 
+                                        ${recommended?.width_group 
+                                            ? `(${recommended.width_group})` 
                                             : ""} 
                                     </strong>
                                     for a more comfortable fit.
@@ -572,6 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <li>A number was mistyped</li>
                                 <li>Measurements were taken in different units</li>
                                 <li>A brace setting doesn’t match the measurements</li>
+                                <li> You may need a mismatched pair when the left and right feet have different measurements.</li>
                             </ul>
                             <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
                             <div style="margin-bottom:25px;">
@@ -607,6 +610,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <li>A number was mistyped</li>
                                 <li>Measurements were taken in different units</li>
                                 <li>A brace setting doesn’t match the measurements</li>
+                                <li> You may need a mismatched pair when the left and right feet have different measurements.</li>
                             </ul>
                             <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
                             <div style="margin-bottom:25px;">
@@ -639,6 +643,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <li>A number was mistyped</li>
                                 <li>Measurements were taken in different units</li>
                                 <li>A brace setting doesn’t match the measurements</li>
+                                <li> You may need a mismatched pair when the left and right feet have different measurements.</li>
                             </ul>
                             <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
                             <div style="margin-bottom:25px;">
@@ -673,6 +678,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <li>A number was mistyped</li>
                                 <li>Measurements were taken in different units</li>
                                 <li>A brace setting doesn’t match the measurements</li>
+                                <li> You may need a mismatched pair when the left and right feet have different measurements.</li>
                             </ul>
                             <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
                             <div style="margin-bottom:25px;">
@@ -703,6 +709,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <li>A number was mistyped</li>
                         <li>Measurements were taken in different units</li>
                         <li>A brace setting doesn’t match the measurements</li>
+                        <li> You may need a mismatched pair when the left and right feet have different measurements.</li>
                     </ul>
                     <p style="margin-bottom:20px;">Let’s quickly check a few things.</p>
                     <div style="margin-bottom:25px;">
