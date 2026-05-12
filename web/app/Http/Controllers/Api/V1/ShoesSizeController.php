@@ -52,8 +52,9 @@ class ShoesSizeController extends ApiController
     {
         $code = strtolower($measurementType->code ?? '');
 
-        if (str_contains($code, 'd')) return 'D';
-        if (str_contains($code, 'e')) return 'E';
+        if ($code === 'a') return 'A';
+        if ($code === 'd') return 'D';
+        if ($code === 'e') return 'E';
 
         return null;
     }
@@ -105,14 +106,40 @@ class ShoesSizeController extends ApiController
 
         foreach ($brandMeasurements as $measurement) {
 
-            $left  = $measurements['left'][$measurement->id]  ?? 0;
-            $right = $measurements['right'][$measurement->id] ?? 0;
+            // 1. Get width type
+            $type = $this->getWidthType($measurement);
 
-            if ($left <= 0 || $right <= 0) {
-                continue;
+            // 2. STRICT VALIDATION (IMPORTANT FIX)
+            $allowedTypes = ['A', 'D', 'E']; // change if A is also valid
+
+            if (!in_array($type, $allowedTypes)) {
+                return $this->errorResponse(
+                    "Unsupported measurement type detected: " . ($measurement->code ?? 'UNKNOWN'),
+                    422
+                );
             }
 
-            // Left-right difference validation
+            // 3. Get input safely
+            $left  = $measurements['left'][$measurement->id] ?? null;
+            $right = $measurements['right'][$measurement->id] ?? null;
+
+            // 4. Missing input check
+            if ($left === null || $right === null) {
+                return $this->errorResponse(
+                    "Missing measurement input for type: " . $type,
+                    422
+                );
+            }
+
+            // 5. Invalid value check
+            if ($left <= 0 || $right <= 0) {
+                return $this->errorResponse(
+                    "Invalid measurement values for type: " . $type,
+                    422
+                );
+            }
+
+            // 6. Left-right difference validation
             if ($unit === 'cm' && abs($left - $right) > 0.5) {
                 return $this->successResponse(
                     null,
@@ -129,7 +156,7 @@ class ShoesSizeController extends ApiController
                 );
             }
 
-            // Take larger foot
+            // 7. Take larger foot
             $footLength[$measurement->id] = max($left, $right);
         }
 
@@ -202,6 +229,12 @@ class ShoesSizeController extends ApiController
         $removal_message = false;
         $nearMatch = false; 
 
+        $typeMap = [];
+
+        foreach ($brandMeasurements as $m) {
+            $typeMap[$m->id] = $this->getWidthType($m);
+        }
+
 
         foreach ($footLength as $measurementId => $length) {
 
@@ -260,7 +293,6 @@ class ShoesSizeController extends ApiController
             //  NEW FIX: STORE NEAR MATCH FLAG (IMPORTANT)
             // -------------------------------
 
-            $tolerance = ($unit === 'cm') ? 0.3 : 0.05;
 
             // NEW: Track near matches (D/E both)
             if (!isset($nearMatch)) {
@@ -270,53 +302,47 @@ class ShoesSizeController extends ApiController
 
             $query = clone $sizeQuery;
 
+            $type = $typeMap[$measurementId] ?? null;
+
+            if ($type === 'A') {
+                $tolerance = 0;
+            } else {
+                $tolerance = ($unit === 'cm') ? 0.1 : 0.3;
+            }
+
             $query->where('shoe_measurement_types_id', $measurementId)
-                ->where(function ($q) use ($effectiveLength, $unit, $measurementId, &$nearMatch, $tolerance) {
+                ->where(function ($q) use ($effectiveLength, $unit, $type) {
 
                     if ($unit === 'cm') {
 
-                        // EXISTING MATCH LOGIC (UNCHANGED)
-                        $q->where('min_cm_size', '<=', $effectiveLength + $tolerance)
-                        ->where('max_cm_size', '>=', $effectiveLength - $tolerance);
-
-                        // -------------------------------
-                        //  NEW: CHECK NEAR MISS (IMPORTANT)
-                        // -------------------------------
-                        // $q->orWhere(function ($sub) use ($effectiveLength, &$nearMatch, $tolerance) {
-                        //     $sub->where(function ($inner) use ($effectiveLength, &$nearMatch, $tolerance) {
-
-                        //         // If slightly above max (within tolerance)
-                        //         $inner->whereRaw('? > max_cm_size AND (? - max_cm_size) <= ?', [
-                        //             $effectiveLength,
-                        //             $effectiveLength,
-                        //             $tolerance
-                        //         ]);
-
-                        //         // mark near match
-                        //         $nearMatch = true;
-                        //     });
-                        // });
+                        if ($type === 'A') {
+                            //  STRICT MATCH
+                            $q->where('min_cm_size', '<=', $effectiveLength)
+                            ->where('max_cm_size', '>=', $effectiveLength);
+                        } else {
+                            //  ONLY WIDTH TOLERANCE
+                            $q->where('min_cm_size', '<=', $effectiveLength + 0.1)
+                            ->where('max_cm_size', '>=', $effectiveLength - 0.1);
+                        }
 
                     } else {
 
-                        // EXISTING MATCH LOGIC (UNCHANGED)
-                        $q->where('min_in_size', '<=', $effectiveLength + $tolerance)
-                        ->where('max_in_size', '>=', $effectiveLength - $tolerance);
+                        if ($type === 'A') {
+                            $q->where('min_in_size', '<=', $effectiveLength)
+                            ->where('max_in_size', '>=', $effectiveLength);
+                        } else {
+                            $q->where('min_in_size', '<=', $effectiveLength + 0.3)
+                            ->where('max_in_size', '>=', $effectiveLength - 0.3);
+                        }
 
-                        // NEW: same logic for inches
-                        // $q->orWhere(function ($sub) use ($effectiveLength, &$nearMatch, $tolerance) {
-                        //     $sub->whereRaw('? > max_in_size AND (? - max_in_size) <= ?', [
-                        //         $effectiveLength,
-                        //         $effectiveLength,
-                        //         $tolerance
-                        //     ]);
-
-                        //     $nearMatch = true;
-                        // });
                     }
                 });
-
+            
             $results = $query->get();
+
+            if ($results->isEmpty()) {
+                continue;
+            }
 
             $ukSizesForMeasurement = $results->pluck('uk_size')->toArray();
 
@@ -324,6 +350,15 @@ class ShoesSizeController extends ApiController
             if ($results->isEmpty()) {
 
                 $nearCheck = clone $sizeQuery;
+
+                //  FIX: define tolerance here
+                $type = $typeMap[$measurementId] ?? null;
+
+                if ($type === 'A') {
+                    $tolerance = 0;
+                } else {
+                    $tolerance = ($unit === 'cm') ? 0.1 : 0.3;
+                }
 
                 if ($unit === 'cm') {
                     $nearCheck->where('shoe_measurement_types_id', $measurementId)
@@ -346,16 +381,58 @@ class ShoesSizeController extends ApiController
         }
 
         // Find common UK sizes across all measurements
-        $commonUkSizes = call_user_func_array('array_intersect', $candidateUkSizes);
+       if (empty($candidateUkSizes)) {
+            return $this->errorResponse('No matching sizes found.', 422);
+        }
 
-        $commonUkSizes = array_values(array_unique($commonUkSizes));
-        sort($commonUkSizes);
+        $commonUkSizes = array_intersect(...$candidateUkSizes);
+
+        //  STEP: FILTER ONLY BY A (CRITICAL FIX)
+
+        $aFilteredSizes = [];
+
+        $aValue = null;
+
+        // get A value once
+        foreach ($brandMeasurements as $m) {
+            if ($this->getWidthType($m) === 'A') {
+                $aValue = $footLength[$m->id] ?? null;
+                break;
+            }
+        }
+
+        foreach ($commonUkSizes as $ukSize) {
+
+            $row = ShoeSize::where('shoe_genders_id', $gender->id)
+                ->where('shoe_brands_id', $brandId)
+                ->where('uk_size', $ukSize)
+                ->whereHas('shoeMeasurementType', function ($q) {
+                    $q->where('code', 'A');
+                })
+                ->first();
+
+            if (!$row || !$aValue) continue;
+
+            $min = $unit === 'cm' ? $row->min_cm_size : $row->min_in_size;
+            $max = $unit === 'cm' ? $row->max_cm_size : $row->max_in_size;
+
+            // ❗ STRICT A MATCH (NO TOLERANCE)
+            if ($aValue >= $min && $aValue <= $max) {
+                $aFilteredSizes[] = $ukSize;
+            }
+        }
+
+        // override sizes
+        $commonUkSizes = $aFilteredSizes;
+
+       // $commonUkSizes = array_values(array_unique($commonUkSizes));
+        //  sort($commonUkSizes);
 
         //  ADD THIS BLOCK HERE (IMPORTANT)
         if (empty($commonUkSizes) && !empty($nearMatch)) {
             return $this->successResponse(
                 null,
-                "⚠ Your foot is slightly wider (within tolerance). Try GOAT or SENSORY for better fit.",
+                "⚠ Your foot is slightly wider. Try GOAT or SENSORY for better fit.",
                 200
             );
         }
@@ -367,7 +444,52 @@ class ShoesSizeController extends ApiController
         // If exactly one size found
         if (count($commonUkSizes) >= 1) {
 
-            $recommendedUkSize = max($commonUkSizes);
+            sort($commonUkSizes);
+           // $recommendedUkSize = max($commonUkSizes);
+
+           $recommendedUkSize = null;
+            $closestDiff = PHP_INT_MAX;
+
+            foreach ($commonUkSizes as $ukSize) {
+
+                $sizeRows = ShoeSize::where('shoe_genders_id', $gender->id)
+                    ->where('shoe_brands_id', $brandId)
+                    ->where('uk_size', $ukSize)
+                    ->get();
+
+                foreach ($sizeRows as $row) {
+
+                    $type = $this->getWidthType($row->shoeMeasurementType);
+
+                    //  ONLY FOOT LENGTH (A)
+                    if ($type !== 'A') {
+                        continue;
+                    }
+
+                    $min = $unit === 'cm' ? $row->min_cm_size : $row->min_in_size;
+                    $max = $unit === 'cm' ? $row->max_cm_size : $row->max_in_size;
+
+                    $mid = ($min + $max) / 2;
+
+                    // get A value
+                    $aValue = null;
+                    foreach ($brandMeasurements as $m) {
+                        if ($this->getWidthType($m) === 'A') {
+                            $aValue = $footLength[$m->id] ?? null;
+                            break;
+                        }
+                    }
+
+                    if ($aValue === null) continue;
+
+                    $diff = abs($aValue - $mid);
+
+                    if ($diff < $closestDiff) {
+                        $closestDiff = $diff;
+                        $recommendedUkSize = $ukSize;
+                    }
+                }
+            }
 
             $finalSizes = ShoeSize::with('shoeMeasurementType', 'shoeBrand', 'shoeGender', 'shoeStyle')
             ->where('shoe_genders_id', $gender->id)
@@ -421,13 +543,18 @@ class ShoesSizeController extends ApiController
 
             $fitMessage = null;
 
-            // D/E values 
+            //A/ D/E values 
+            $aValue = null;
             $dValue = null;
             $eValue = null;
 
             foreach ($brandMeasurements as $measurement) {
 
                 $type = $this->getWidthType($measurement);
+
+                if ($type === 'A') {
+                    $aValue = $footLength[$measurement->id] ?? null;
+                }
 
                 if ($type === 'D') {
                     $dValue = $footLength[$measurement->id] ?? null;
@@ -474,7 +601,7 @@ class ShoesSizeController extends ApiController
                 // GOAT → narrow check (WITH 0.3 tolerance)
                 if (str_contains(strtolower($styleGroup), 'goat')) {
 
-                    $tolerance = 0.3;
+                    $tolerance = 0;
                     $isNarrow = false;
 
                     // D check
@@ -517,7 +644,7 @@ class ShoesSizeController extends ApiController
                     $isWide = false;
 
                     // tolerance
-                    $tolerance = 0.3;
+                    $tolerance = 0;
 
                     // D check (only upto +0.3)
                     if (
@@ -551,7 +678,7 @@ class ShoesSizeController extends ApiController
                 'max_size' => max($commonUkSizes),
                 'fit_message' => $fitMessage, //  NEW
                 'removal_message' => $removal_message,
-                'is_between' => count($commonUkSizes) > 1
+                'is_between' => count($commonUkSizes) > 1 && count($aFilteredSizes) > 1
             ], 'Shoe size found successfully', 200);
         }
 
@@ -565,7 +692,6 @@ class ShoesSizeController extends ApiController
             200
         );
     }
-
 
     public function importCSV(Request $request)
     {
@@ -583,168 +709,5 @@ class ShoesSizeController extends ApiController
         ImportShoeCSVJob::dispatch($path);
 
         return $this->successResponse(null, 'CSV file uploaded and import job dispatched successfully', 200);
-    }
-
-    public function exportCSV(Request $request)
-        {
-            $brandId  = $request->brand_id ?? null;
-            $genderId = $request->gender_id ?? null;
-
-            $query = ShoeSize::with([
-                'shoeBrand',
-                'shoeGender',
-                'shoeMeasurementType',
-                'shoeStyle'
-            ]);
-
-            // Brand Filter
-            if (!empty($brandId)) {
-                $query->where('shoe_brands_id', $brandId);
-            }
-
-            // Gender Filter
-            if (!empty($genderId)) {
-                $query->where('shoe_genders_id', $genderId);
-            }
-
-            $sizes = $query->get();
-
-            if ($sizes->isEmpty()) {
-                return response()->json(['message' => 'No data found.'], 404);
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            |  Dynamic File Name (Brand + Gender)
-            |--------------------------------------------------------------------------
-            */
-
-            $brandName  = 'all_brands';
-            $genderName = 'all_genders';
-
-            if (!empty($brandId)) {
-                $brand = \App\Models\ShoeBrand::find($brandId);
-                if ($brand) {
-                    $brandName = strtolower(preg_replace('/[^A-Za-z0-9\-]/', '_', $brand->name));
-                }
-            }
-
-            if (!empty($genderId)) {
-                $gender = \App\Models\ShoeGender::find($genderId);
-                if ($gender) {
-                    $genderName = strtolower(preg_replace('/[^A-Za-z0-9\-]/', '_', $gender->name));
-                }
-            }
-
-            $fileName = $brandName . '_' . $genderName . '_sizes_' . now()->timestamp . '.csv';
-
-            /*
-            |--------------------------------------------------------------------------
-            | CSV Headers
-            |--------------------------------------------------------------------------
-            */
-
-            $headers = [
-                'brand_name',
-                'size_category',
-                'internal_group',
-                'measurement_type',
-                'measurement_name',
-                'style',
-                'width_group',
-                'us_size',
-                'uk_size',
-                'eu_size',
-                'value_cm_min',
-                'value_cm_max',
-                'value_inches_min',
-                'value_inches_max',
-            ];
-
-            $callback = function () use ($sizes, $headers) {
-                $file = fopen('php://output', 'w');
-                fputcsv($file, $headers);
-
-                foreach ($sizes as $size) {
-                    fputcsv($file, [
-                        $size->shoeBrand->name ?? '',
-                        $size->shoeGender->name ?? '',
-                        $size->shoeGender->internal_group ?? '',
-                        $size->shoeMeasurementType->code ?? '',
-                        $size->shoeMeasurementType->name ?? '',
-                        $size->shoeStyle->name ?? '',
-                        $size->shoeStyle->width_group ?? '',
-                        $size->us_size,
-                        $size->uk_size,
-                        $size->eu_size,
-                        $size->min_cm_size,
-                        $size->max_cm_size,
-                        $size->min_in_size,
-                        $size->max_in_size,
-                    ]);
-                }
-
-                fclose($file);
-            };
-
-            return response()->streamDownload($callback, $fileName, [
-                "Content-Type" => "text/csv",
-            ]);
-    }
-
-    public function downloadSampleCSV()
-    {
-        $fileName = 'sample_shoe_import.csv';
-
-        $headers = [
-            'brand_name',
-            'size_category',
-            'internal_group',
-            'measurement_type',
-            'measurement_name',
-            'style',
-            'width_group',
-            'us_size',
-            'uk_size',
-            'eu_size',
-            'value_cm_min',
-            'value_cm_max',
-            'value_inches_min',
-            'value_inches_max',
-        ];
-
-        $sampleRows = [
-            [
-                'Nike',
-                'Men',
-                'adult',
-                'FL',
-                'Foot Length',
-                'Sports',
-                'Medium',
-                '8',
-                '7',
-                '41',
-                '25.0',
-                '25.5',
-                '9.84',
-                '10.04'
-            ]
-        ];
-
-        $callback = function () use ($headers, $sampleRows) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $headers);
-
-            foreach ($sampleRows as $row) {
-                fputcsv($file, $row);
-            }
-
-            fclose($file);
-        };
-
-        return response()->streamDownload($callback, $fileName, [
-            "Content-Type" => "text/csv",
-        ]);
     }
 }
